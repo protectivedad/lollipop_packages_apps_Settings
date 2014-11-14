@@ -27,10 +27,13 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 import android.util.Log;
-
+import android.os.SystemProperties;
 import com.android.settings.R;
 import com.android.settings.SettingsPreferenceFragment;
 import com.android.settings.Utils;
+import android.os.ServiceManager;
+import android.os.IBinder;
+import android.os.storage.IMountService;
 
 /**
  * USB storage settings.
@@ -41,12 +44,15 @@ public class UsbSettings extends SettingsPreferenceFragment {
 
     private static final String KEY_MTP = "usb_mtp";
     private static final String KEY_PTP = "usb_ptp";
+	private static final String KEY_MASS = "usb_mass";
 
     private UsbManager mUsbManager;
     private CheckBoxPreference mMtp;
     private CheckBoxPreference mPtp;
     private boolean mUsbAccessoryMode;
-
+    private CheckBoxPreference mMass;
+    private String BuildWithUMS ="";
+	private IMountService mMountService;
     private final BroadcastReceiver mStateReceiver = new BroadcastReceiver() {
         public void onReceive(Context content, Intent intent) {
             String action = intent.getAction();
@@ -75,6 +81,29 @@ public class UsbSettings extends SettingsPreferenceFragment {
             mPtp.setEnabled(false);
         }
 
+        mMass= (CheckBoxPreference)root.findPreference(KEY_MASS);
+	BuildWithUMS = SystemProperties.get("ro.factory.hasUMS", "false");
+	if(("true".equals(BuildWithUMS))&&(mMountService!=null))
+	 {
+                   try
+		   {
+			    String flashPratition = System.getenv("EXTERNAL_STORAGE_FLASH");
+			    String flashState =mMountService.getVolumeState(flashPratition);
+			    if(!"mounted".equals(flashState) && !"shared".equals(flashState))
+			    {
+				    BuildWithUMS = "false";
+				    Log.d(TAG,"boardconfig set enable UMS,but flash partition is not mounted,disable UMS");
+			    }
+		    }
+		    catch(Exception e)
+		    {
+
+		    }
+				Log.e(TAG, "Can't get mount service");
+	    }
+	 if(!"true".equals(BuildWithUMS)){
+		root.removePreference(root.findPreference(KEY_MASS));
+         }
         return root;
     }
 
@@ -82,6 +111,14 @@ public class UsbSettings extends SettingsPreferenceFragment {
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         mUsbManager = (UsbManager)getSystemService(Context.USB_SERVICE);
+		if (mMountService == null) {
+			IBinder service = ServiceManager.getService("mount");
+			if (service != null) {
+				mMountService = IMountService.Stub.asInterface(service);
+			} else {
+				Log.e(TAG, "Can't get mount service");
+			}
+		}
     }
 
     @Override
@@ -104,15 +141,27 @@ public class UsbSettings extends SettingsPreferenceFragment {
     }
 
     private void updateToggles(String function) {
+        Log.e(TAG,"BuildWithUMS +" + BuildWithUMS);
         if (UsbManager.USB_FUNCTION_MTP.equals(function)) {
             mMtp.setChecked(true);
             mPtp.setChecked(false);
+	    if("true".equals(BuildWithUMS) )
+	    	mMass.setChecked(false);
         } else if (UsbManager.USB_FUNCTION_PTP.equals(function)) {
             mMtp.setChecked(false);
             mPtp.setChecked(true);
-        } else  {
+	    if("true".equals(BuildWithUMS) ) 
+	    	mMass.setChecked(false);
+        }  else if (UsbManager.USB_FUNCTION_MASS_STORAGE.equals(function)) {
             mMtp.setChecked(false);
             mPtp.setChecked(false);
+	    if("true".equals(BuildWithUMS) )
+	    	mMass.setChecked(true);
+        } else  {
+            mMtp.setChecked(false);            
+	    mPtp.setChecked(false);
+	    if("true".equals(BuildWithUMS))
+	    	mMass.setChecked(true);
         }
         UserManager um = (UserManager) getActivity().getSystemService(Context.USER_SERVICE);
         if (um.hasUserRestriction(UserManager.DISALLOW_USB_FILE_TRANSFER)) {
@@ -151,6 +200,8 @@ public class UsbSettings extends SettingsPreferenceFragment {
             function = UsbManager.USB_FUNCTION_MTP;
         } else if (preference == mPtp && mPtp.isChecked()) {
             function = UsbManager.USB_FUNCTION_PTP;
+        } else if (preference == mMass) {
+            function = UsbManager.USB_FUNCTION_MASS_STORAGE;
         }
 
         mUsbManager.setCurrentFunction(function, true);

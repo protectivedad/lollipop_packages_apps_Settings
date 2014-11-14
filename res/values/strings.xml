@@ -6036,6 +6036,10 @@
    <!-- Title for encryption dialog that disables TalkBack. [CHAR_LIMIT=25] -->
    <string name="encrypt_talkback_dialog_require_password">Require password?</string>
 
+   <!-- Storage setting.  Title for Mass Storage [CHAR LIMIT=30]-->
+       <string name="usb_mass_title">Mass Storage</string>
+       <!-- Storage setting.  Label for Mass Storage [CHAR LIMIT=30]-->
+       <string name="usb_mass_summary">Use Mass Storage to share files</string>
    <!-- Message for encryption dialog telling the user that Talkback and other accessibility services will be disabled. -->
    <string name="encrypt_talkback_dialog_message_pin">When you enter your PIN to start this device, accessibility services like <xliff:g id="service" example="TalkBack">%1$s</xliff:g> won\'t yet be available.</string>
 

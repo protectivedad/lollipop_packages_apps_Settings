@@ -2512,4 +2512,9 @@
     <string name="imei_information_title" msgid="8499085421609752290">"IMEI信息"</string>
     <string name="imei_information_summary" msgid="2074095606556565233">"IMEI相关信息"</string>
     <string name="slot_number" msgid="3762676044904653577">"（插槽<xliff:g id="SLOT_NUM">%1$d</xliff:g>）"</string>
+
+ <!-- Storage setting.  Title for Mass Storage [CHAR LIMIT=30]-->
+       <string name="usb_mass_title">大容量存储设备</string>
+       <!-- Storage setting.  Label for Mass Storage [CHAR LIMIT=30]-->
+       <string name="usb_mass_summary">使用大容量存储设备在计算机上传输文件</string>
 </resources>
