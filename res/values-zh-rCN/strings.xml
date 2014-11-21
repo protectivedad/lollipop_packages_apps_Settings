@@ -2517,4 +2517,12 @@
        <string name="usb_mass_title">大容量存储设备</string>
        <!-- Storage setting.  Label for Mass Storage [CHAR LIMIT=30]-->
        <string name="usb_mass_summary">使用大容量存储设备在计算机上传输文件</string>
+       
+        <string name="hdmi_connect">HDMI已连接.</string>
+        <string name="hdmi_disconnect">HDMI已断开连接.</string>
+        <string name="hdmi_settings">"HDMI配置"</string>
+    <string name="hdmi_lcd_timeout">屏幕休眠</string>
+        <string name="hdmi_title">"打开HDMI"</string>
+        <string name="hdmi_resolution_title">"分辨率设置</string>
+        <string name="hdmi_screen_zoom">"屏幕缩放"</string>
 </resources>

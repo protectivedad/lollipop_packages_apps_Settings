@@ -2069,6 +2069,29 @@
                 <action android:name="android.content.action.SEARCH_INDEXABLES_PROVIDER" />
             </intent-filter>
         </provider>
-
+        
+        <!-- HDMI -->
+        <activity android:name="Settings$HdmiSettingsActivity"
+                android:label="@string/hdmi"
+                android:taskAffinity="">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.VOICE_LAUNCH" />
+                <category android:name="com.android.settings.SHORTCUT" />
+            </intent-filter>
+            <meta-data android:name="com.android.settings.FRAGMENT_CLASS"
+                android:value="com.android.settings.HdmiSettings" />
+            <meta-data android:name="com.android.settings.TOP_LEVEL_HEADER_ID"
+                android:resource="@id/hdmi_settings" />
+            <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
+                android:value="true" />
+        </activity>
+        
+        <receiver android:name="HdmiReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.HDMI_PLUG"/>
+            </intent-filter>
+       </receiver>
     </application>
 </manifest>

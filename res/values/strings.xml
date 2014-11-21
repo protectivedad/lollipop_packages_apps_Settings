@@ -6054,4 +6054,11 @@
    <string name="imei_information_summary">IMEI relative information</string>
    <string name="slot_number">(Slot<xliff:g id="slot_num">%1$d</xliff:g>)</string>
 
+   <string name="hdmi">HDMI</string><string name="hdmi_screen_zoom">Screen Zoom</string>
+    <string name="hdmi_title">Turn on HDMI</string>
+    <string name="hdmi_resolution_title">HDMI Resolution</string>
+    <string name="hdmi_lcd_timeout">Screen Timeout</string>
+    <string name="hdmi_settings">HDMI</string>
+    <string name="hdmi_connect">HDMI is connected.</string>
+     <string name="hdmi_disconnect">HDMI is disconnected.</string>
 </resources>
