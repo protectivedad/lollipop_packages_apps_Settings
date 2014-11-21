@@ -355,7 +355,11 @@ public class WirelessSettings extends SettingsPreferenceFragment
         if (!isSmsSupported()) {
             removePreference(KEY_SMS_APPLICATION);
         }
-
+       //add by rochip xxh  revmoe KEY_MANAGE_MOBILE_PLAN when device is used as a MID
+       if((SystemProperties.get("ril.function.dataonly")).equals("1")){
+	    removePreference(KEY_SMS_APPLICATION);
+	    removePreference(KEY_MANAGE_MOBILE_PLAN);
+        }
         // Remove Airplane Mode settings if it's a stationary device such as a TV.
         if (mPm.hasSystemFeature(PackageManager.FEATURE_TELEVISION)) {
             removePreference(KEY_TOGGLE_AIRPLANE);
