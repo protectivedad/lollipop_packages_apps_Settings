@@ -210,6 +210,7 @@ public class WifiEnabler implements SwitchBar.OnSwitchChangeListener  {
             mWifiManager.setWifiApEnabled(null, false);
         }
 
+        mSwitchBar.setEnabled(false);
         if (!mWifiManager.setWifiEnabled(isChecked)) {
             // Error
             mSwitchBar.setEnabled(true);
