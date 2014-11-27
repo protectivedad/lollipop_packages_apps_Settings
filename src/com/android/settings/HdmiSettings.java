@@ -15,12 +15,17 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
+import javax.xml.transform.Result;
+
 import com.android.settings.widget.SwitchBar;
 
+import android.os.AsyncTask;
 import android.os.SystemProperties;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -58,11 +63,6 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	private ListPreference mHdmiLcd;
 	private Preference mHdmiScale;
 
-	private File HdmiFile = null;
-	private File HdmiState = null;
-	private File HdmiDisplayEnable = null;
-	private File HdmiDisplayMode = null;
-	private File HdmiDisplayConnect = null;
 	private File HdmiDisplayModes=null;
 	private Context context;
 	private static final int DEF_HDMI_LCD_TIMEOUT_VALUE = 10;
@@ -70,6 +70,14 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	private SharedPreferences sharedPreferences;
 	private SharedPreferences.Editor editor;
 	private SwitchBar mSwitchBar;
+	private static final String dualModeFileName="sys/class/graphics/fb0/dual_mode";
+	private static final String mHdmiModeFileName="/sys/class/display/HDMI/mode";
+	private static final String mHdmiEnableFlieName="/sys/class/display/HDMI/enable";
+	private static final String mHdmiConnectFileName="sys/class/display/HDMI/connect";
+	private static final String SET_MODE="set_mode";
+	private static final String GET_MODE="get_mode";
+	private static final String HDMI_CONNECTED="connect";
+	private static final String HDMI_DISCONNECTED="disconnect";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -80,69 +88,35 @@ public class HdmiSettings extends SettingsPreferenceFragment
 				Context.MODE_PRIVATE);
 		String enable = sharedPreferences.getString("enable", "1");
 		editor = sharedPreferences.edit();
-		if (!isDualMode()) {
-			addPreferencesFromResource(R.xml.hdmi_settings);
-		} else {
-			addPreferencesFromResource(R.xml.hdmi_settings_timeout);
-			mHdmiLcd = (ListPreference) findPreference(KEY_HDMI_LCD);
-			mHdmiLcd.setOnPreferenceChangeListener(this);
-			ContentResolver resolver = context.getContentResolver();
-			long lcdTimeout = -1;
-			if ((lcdTimeout = Settings.System.getLong(resolver,
-					Settings.System.HDMI_LCD_TIMEOUT,
-					DEF_HDMI_LCD_TIMEOUT_VALUE)) > 0) {
-				lcdTimeout /= 10;
-			}
-			mHdmiLcd.setValue(String.valueOf(lcdTimeout));
-			mHdmiLcd.setEnabled(enable.equals("1"));
-		}
-		
-		
-		HdmiDisplayEnable = new File("/sys/class/display/HDMI/enable");
-		HdmiDisplayMode = new File("/sys/class/display/HDMI/mode");
-		HdmiDisplayConnect = new File("sys/class/display/HDMI/connect");
-		HdmiDisplayModes=new File("sys/class/display/HDMI/modes");
-
+		// addPreferencesFromResource(R.xml.hdmi_settings);
+		addPreferencesFromResource(R.xml.hdmi_settings_timeout);
+		mHdmiLcd = (ListPreference) findPreference(KEY_HDMI_LCD);
+		HdmiDisplayModes = new File("sys/class/display/HDMI/modes");
 		mHdmiResolution = (ListPreference) findPreference(KEY_HDMI_RESOLUTION);
 		mHdmiResolution.setOnPreferenceChangeListener(this);
-		//mHdmiResolution.setEntries(getModes());
-		//mHdmiResolution.setEntryValues(getModes());
-		String resolutionValue=sharedPreferences.getString("resolution", null);
-		Log.d(TAG,"resolutionValue=  "+resolutionValue);
-		//mHdmiResolution.setValue(resolutionValue+"\n");
-		mHdmiResolution.setEnabled(enable.equals("1"));
-
-		mHdmiScale=findPreference(KEY_HDMI_SCALE);
+		String resolutionValue = sharedPreferences
+				.getString("resolution", null);
+		mHdmiScale = findPreference(KEY_HDMI_SCALE);
 		mHdmiScale.setEnabled(enable.equals("1"));
 		Log.d(TAG,"onCreate---------------------");
+		initDualMode();
+		HdmiIsConnectTask task=new HdmiIsConnectTask();
+		task.execute();
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onActivityCreated(savedInstanceState);
-		Log.d(TAG,"onActivityCreated----------------------------------------");
 		final SettingsActivity activity = (SettingsActivity) getActivity();
 	    mSwitchBar = activity.getSwitchBar();
 	    mSwitchBar.show();
 	    mSwitchBar.addOnSwitchChangeListener(this);
 	    mSwitchBar.setChecked(sharedPreferences.getString("enable", "1").equals("1"));
 	    
-	    //mHdmiResolution.setValue(mHdmiResolution.getEntryValues()[0].toString());
 	    String resolutionValue=sharedPreferences.getString("resolution", null);
-	    if(resolutionValue==null){
-	    	return;
-	    }
-	    mHdmiResolution.setValue(resolutionValue);
-	    /*
-	    for(int i=0;i<resolutionValue.length();i++){
-			Log.d(TAG,"str="+resolutionValue.charAt(i));
-		}
-		Log.d(TAG,"resolutionValue=  "+resolutionValue);
-		mHdmiResolution.setValue(resolutionValue);
-		for(int i=0;i<mHdmiResolution.getEntryValues()[0].length();i++){
-			Log.d(TAG,"str="+mHdmiResolution.getEntryValues()[0].charAt(i));
-		}*/
+	    Log.d(TAG,"onActivityCreated resolutionValue="+resolutionValue);
+	    context.registerReceiver(hdmiReceiver, new IntentFilter("android.intent.action.HDMI_PLUG"));
 	}
 	
 	
@@ -151,11 +125,25 @@ public class HdmiSettings extends SettingsPreferenceFragment
 			Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		Log.d(TAG,"onCreateView----------------------------------------");
-		String resolutionValue=sharedPreferences.getString("resolution", null);
-		//Log.d(TAG,"resolutionValue=  "+resolutionValue.toCharArray());
-		//mHdmiResolution.setValue(resolutionValue);
 		return super.onCreateView(inflater, container, savedInstanceState);
 	}
+	
+	private BroadcastReceiver hdmiReceiver=new BroadcastReceiver() {
+		
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+			int state=intent.getIntExtra("state", 1);
+			if(state==1){
+			  HdmiModeTask hdmiModeTask=new HdmiModeTask();
+			  hdmiModeTask.execute("getmodes");
+			}else{
+				mHdmiResolution.setEnabled(false);
+			}
+		}
+	};
+	
+	
 	
 	private ContentObserver mHdmiTimeoutSettingObserver = new ContentObserver(
 			new Handler()) {
@@ -187,7 +175,8 @@ public class HdmiSettings extends SettingsPreferenceFragment
 
 	public void onPause() {
 		super.onPause();
-		// getContentResolver().unregisterContentObserver(mHdmiTimeoutSettingObserver);
+		Log.d(TAG,"onPause----------------");
+		context.unregisterReceiver(hdmiReceiver);
 	}
 
 	public void onDestroy() {
@@ -196,57 +185,28 @@ public class HdmiSettings extends SettingsPreferenceFragment
 				mHdmiTimeoutSettingObserver);
 	}
 
-	private boolean isDualMode() {
-		boolean isDualMode = false;
-		File file = new File("/sys/class/graphics/fb0/dual_mode");
-		if (file.exists()) {
-			try {
-				FileReader fread = new FileReader(file);
-				BufferedReader buffer = new BufferedReader(fread);
-				String str = null;
-				while ((str = buffer.readLine()) != null) {
-					if (!str.equals("0")) {
-						isDualMode = true;
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
+	private void initDualMode() {
+		int dualMode=sharedPreferences.getInt("dual_mode", 0);
+		if(dualMode==0){
+			HdmiSettings.this.getPreferenceScreen().removePreference(mHdmiLcd);
+		}else{
+			mHdmiLcd.setOnPreferenceChangeListener(HdmiSettings.this);
+			ContentResolver resolver = context.getContentResolver();
+			long lcdTimeout = -1;
+			if ((lcdTimeout = Settings.System.getLong(resolver,
+					Settings.System.HDMI_LCD_TIMEOUT,
+					DEF_HDMI_LCD_TIMEOUT_VALUE)) > 0) {
+				lcdTimeout /= 10;
 			}
+			String enable = sharedPreferences.getString("enable", "1");
+			mHdmiLcd.setValue(String.valueOf(lcdTimeout));
+			mHdmiLcd.setEnabled(enable.equals("1"));
 		}
-		return isDualMode;
 	}
 
-	protected void setHdmiConfig(File file, boolean enable) {
-
-		if (file.exists()) {
-			try {
-				Log.d(TAG, "setHdmiConfig");
-				String strChecked = "1";
-				String strUnChecked = "0";
-				RandomAccessFile rdf = null;
-				rdf = new RandomAccessFile(file, "rw");
-				if (enable) {
-					rdf.writeBytes(strChecked);
-					editor.putString("enable", "1");
-					mHdmiLcd.setEnabled(true);
-					mHdmiResolution.setEnabled(true);
-					mHdmiScale.setEnabled(true);
-				} else {
-					rdf.writeBytes(strUnChecked);
-					editor.putString("enable", "0");
-					mHdmiLcd.setEnabled(false);
-					mHdmiResolution.setEnabled(false);
-					mHdmiScale.setEnabled(false);
-				}
-				rdf.close();
-				editor.commit();
-			} catch (IOException re) {
-				Log.e(TAG, "IO Exception");
-				re.printStackTrace();
-			}
-		} else {
-			Log.i(TAG, "The File " + file + " is not exists");
-		}
+	protected void setHdmiConfig(boolean enable) {
+		HdmiEnableTask hdmiEnableTask=new HdmiEnableTask();
+		hdmiEnableTask.execute(enable?"1":"0");
 	}
 
 	@Override
@@ -260,12 +220,10 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		if (value != -1) {
 			value = (value) * 10;
 		}
-		try {
-			Settings.System.putInt(getContentResolver(),
-					Settings.System.HDMI_LCD_TIMEOUT, value);
-		} catch (NumberFormatException e) {
-			Log.e(TAG, "could not persist hdmi lcd timeout setting", e);
-		}
+		HdmiTimeoutSettingTask task=new HdmiTimeoutSettingTask();
+		task.execute(Integer.valueOf(value));
+		
+		
 	}
 
 	@Override
@@ -274,11 +232,7 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		String key = preference.getKey();
 		if (KEY_HDMI_RESOLUTION.equals(key)) {
 			try {
-				String strResolution = "hdmi_resolution";
-				//int value = Integer.parseInt((String) objValue);
-				editor.putString("resolution", (String)objValue);
-				Log.d(TAG,"onPreferenceChange="+objValue);
-				setHdmiOutputStyle(HdmiDisplayMode, (String)objValue);
+				setHdmiMode((String)objValue);
 			} catch (NumberFormatException e) {
 				Log.e(TAG, "onPreferenceChanged hdmi_resolution setting error");
 			}
@@ -298,63 +252,16 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		return true;
 	}
 
-	public static boolean isHdmiConnected(File file) {
-		boolean isConnected = false;
-		if (file.exists()) {
-			try {
-				FileReader fread = new FileReader(file);
-				BufferedReader buffer = new BufferedReader(fread);
-				String str = null;
 
-				while ((str = buffer.readLine()) != null) {
-					int length = str.length();
-					if (str.equals("1")) {
-						isConnected = true;
-						break;
-					}
-				}
-			} catch (IOException e) {
-				Log.e(TAG, "IO Exception");
-			}
-		}
-		return isConnected;
-	}
-
-	protected void setHdmiOutputStyle(File file, String style) {
-
-		if (file.exists()) {
-			try {
-				
-
-				// write into file
-				File f = new File("/sys/class/display/HDMI/mode");
-				OutputStream output = null;
-				OutputStreamWriter outputWrite = null;
-				PrintWriter print = null;
-				StringBuffer    strbuf = new StringBuffer(style);
-				
-				output = new FileOutputStream(f);
-				outputWrite = new OutputStreamWriter(output);
-				print = new PrintWriter(outputWrite);
-				Log.d(TAG, "strbuf=" + style);
-				print.print(style);
-			   //print.print("1280x720p-60"+"\n");
-				print.flush();
-				output.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-
-				Log.e(TAG, "IO Exception");
-			}
-		} else {
-			Log.i(TAG, "The File " + file + " is not exists");
-		}
+	protected void setHdmiMode(String mode) {
+		HdmiModeTask hdmiModeTask=new HdmiModeTask();
+		hdmiModeTask.execute(mode);
 	}
 
 	@Override
 	public void onSwitchChanged(Switch switchView, boolean isChecked) {
 		// TODO Auto-generated method stub
-		setHdmiConfig(HdmiDisplayEnable, isChecked);
+		setHdmiConfig(isChecked);
 	}
 
 	private String[] getModes() {
@@ -365,7 +272,7 @@ public class HdmiSettings extends SettingsPreferenceFragment
 			String str = null;
 
 			while ((str = buffer.readLine()) != null) {
-				list.add(str + "\n");
+				list.add(str+"\n");
 			}
 			fread.close();
 			buffer.close();
@@ -374,5 +281,136 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		}
 		return list.toArray(new String[list.size()]);
 	}
+	
 
+	
+	private class HdmiEnableTask extends AsyncTask<String, Void, String>{
+
+		@Override
+		protected String doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			try {
+				Log.d(TAG, "setHdmiConfig");
+				RandomAccessFile rdf = null;
+				rdf = new RandomAccessFile(mHdmiEnableFlieName, "rw");
+				rdf.writeBytes(params[0]);
+				editor.putString("enable", "1");
+				rdf.close();
+				editor.commit();
+			} catch (IOException re) {
+				Log.e(TAG, "IO Exception");
+				re.printStackTrace();
+			}
+			return params[0];
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			// TODO Auto-generated method stub
+			
+			if(result.equals("1")){
+				mHdmiLcd.setEnabled(true);
+				//mHdmiResolution.setEnabled(true);
+				mHdmiScale.setEnabled(true);
+			}else{
+				mHdmiLcd.setEnabled(false);
+				//mHdmiResolution.setEnabled(false);
+				mHdmiScale.setEnabled(false);
+			}
+		}
+		
+	}
+	
+	
+	
+	private class HdmiModeTask extends AsyncTask<String, Void, String[]>{
+
+		@Override
+		protected String[] doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			if (!params[0].equals("getmodes")) {
+				try {
+					RandomAccessFile rdf = null;
+					rdf = new RandomAccessFile(mHdmiModeFileName, "rw");
+					rdf.writeBytes(params[0]);
+					rdf.close();
+					editor.putString("resolution", params[0]).commit();
+				} catch (IOException re) {
+					Log.e(TAG, "IO Exception");
+					re.printStackTrace();
+				}
+				return null;
+			} else {
+                return getModes();
+			}
+		}
+		
+	    @Override
+	    protected void onPostExecute(String[] result) {
+	    	// TODO Auto-generated method stub
+	    	if(result!=null){
+	    		mHdmiResolution.setEntries(result);
+				mHdmiResolution.setEntryValues(result);
+				mHdmiResolution.setEnabled(true);
+				String resolutionValue=sharedPreferences.getString("resolution", null).trim()+"\n";
+			    Log.d(TAG,"HdmiModeTask resolutionValue="+resolutionValue);
+			    mHdmiResolution.setValue(resolutionValue);
+	    	}
+	    }
+		
+	}
+	
+	private class HdmiTimeoutSettingTask extends AsyncTask<Integer, Void, Void>{
+
+		@Override
+		protected Void doInBackground(Integer... params) {
+			// TODO Auto-generated method stub
+			try {
+				Settings.System.putInt(getContentResolver(),
+						Settings.System.HDMI_LCD_TIMEOUT, params[0]);
+			} catch (NumberFormatException e) {
+				Log.e(TAG, "could not persist hdmi lcd timeout setting", e);
+			}
+			return null;
+		}
+		
+	}
+	
+	private class HdmiIsConnectTask extends AsyncTask<Void, Void, String>{
+
+		@Override
+		protected String doInBackground(Void... params) {
+			// TODO Auto-generated method stub
+			String isConnected=HDMI_DISCONNECTED;
+			try {
+				FileReader fread = new FileReader(mHdmiConnectFileName);
+				BufferedReader buffer = new BufferedReader(fread);
+				String str = null;
+				while ((str = buffer.readLine()) != null) {
+					if (str.equals("1")) {
+						isConnected = HDMI_CONNECTED;
+						break;
+					} else {
+						isConnected = HDMI_DISCONNECTED;
+					}
+				}
+				buffer.close();
+				fread.close();
+			} catch (IOException e) {
+				Log.e(TAG, "IO Exception");
+			}
+			return isConnected;
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			// TODO Auto-generated method stub
+			if(result.equals(HDMI_CONNECTED)){
+				HdmiModeTask hdmiModeTask=new HdmiModeTask();
+				hdmiModeTask.execute("getmodes");
+			}else{
+				mHdmiResolution.setEnabled(false);
+			}
+		}
+	}
 }

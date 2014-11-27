@@ -18,6 +18,7 @@ package com.android.settings;
 
 import android.util.Log;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.RemoteException;
 import android.os.IPowerManager;
 import android.os.ServiceManager;
@@ -35,22 +36,9 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 import android.preference.SeekBarDialogPreference;
 import android.os.SystemProperties;
-import java.util.Map;
 
+import java.util.Map;
 import java.io.*;
-import java.io.File;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.FileWriter;
-import java.io.Writer;
-import java.io.FileReader;
-import java.io.FileWriter;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -63,6 +51,7 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 	private static final int MAXIMUN_SCREEN_SCALE = 20;
 
 	private File HdmiScale = new File("/sys/class/display/HDMI/scale");
+	private File DualModeFile = new File("/sys/class/graphics/fb0/dual_mode");
 	private SeekBar mSeekBar;
 	private int mOldScale = 0;
 	private int mValue = 0;
@@ -71,46 +60,26 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 	// for save hdmi config
 	private Context context;
 	private final File HdmiState = new File("sys/class/display/HDMI/connect");
+	private int dualMode;
+	private SharedPreferences preferences;
 
 	public HdmiScreenZoomPreference(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		this.context = context;
 		setDialogLayoutResource(R.layout.preference_dialog_screen_scale);
 		setDialogIcon(R.drawable.ic_settings_screen_scale);
+		preferences = context.getSharedPreferences(
+				"HdmiSettings", context.MODE_PRIVATE);
+		dualMode=preferences.getInt("dual_mode", 0);
 	}
 
 	protected void setHdmiScreenScale(File file, int value) {
-		if (file.exists()) {
-			try {
-				StringBuffer strbuf = new StringBuffer("");
-				strbuf.append(value);
-				OutputStream output = null;
-				OutputStreamWriter outputWrite = null;
-				PrintWriter print = null;
-
-				try {
-					// SystemProperties.set("sys.hdmi_screen.scale",String.valueOf(value));
-					output = new FileOutputStream(file);
-					outputWrite = new OutputStreamWriter(output);
-					print = new PrintWriter(outputWrite);
-                    Log.d(TAG,"scale value="+strbuf);
-					print.print(strbuf.toString());
-					print.flush();
-					output.close();
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				}
-			} catch (IOException e) {
-				Log.e(TAG, "IO Exception");
-			}
-
-		} else {
-			Log.e(TAG, "File:" + file + "not exists");
-		}
+		HdmiScaleTask hdmiScaleTask=new HdmiScaleTask();
+		hdmiScaleTask.execute(String.valueOf(value));
 		//if (!isHdmiConnected(HdmiState)) {
 		//	return;
 		//}
-		if (getFBDualDisplayMode() == 1) {
+		if (dualMode == 1) {
 			SystemProperties.set("sys.hdmi_screen.scale",
 					String.valueOf((char) value));
 		} else {
@@ -144,26 +113,6 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 		return isConnected;
 	}
 
-	private int getFBDualDisplayMode() {
-		int mode = 0;
-		File DualModeFile = new File("/sys/class/graphics/fb0/dual_mode");
-		if (DualModeFile.exists()) {
-			try {
-				byte[] buf = new byte[10];
-				int len = 0;
-				RandomAccessFile rdf = new RandomAccessFile(DualModeFile, "r");
-				len = rdf.read(buf);
-				String modeStr = new String(buf, 0, 1);
-				mode = Integer.valueOf(modeStr);
-				rdf.close();
-			} catch (IOException re) {
-				Log.e(TAG, "IO Exception");
-			} catch (NumberFormatException re) {
-				Log.e(TAG, "NumberFormatException");
-			}
-		}
-		return mode;
-	}
 
 	@Override
 	protected void onBindDialogView(View view) {
@@ -208,14 +157,11 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 	protected void onDialogClosed(boolean positiveResult) {
 		super.onDialogClosed(positiveResult);
 		// for save config
-		SharedPreferences preferences = context.getSharedPreferences(
-				"HdmiSettings", context.MODE_PRIVATE);
-		SharedPreferences.Editor editor = preferences.edit();
 
 		if (positiveResult) {
 			int value = mSeekBar.getProgress() + 80;
 			setHdmiScreenScale(HdmiScale, value);
-			editor.putString("scale_set", String.valueOf(value));
+			//editor.putString("scale_set", String.valueOf(value));
 		} else {
 			if (mFlag) {
 				mRestoreValue = mRestoreValue + 80;
@@ -223,14 +169,51 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 					mRestoreValue = 100;
 				}
 				setHdmiScreenScale(HdmiScale, mRestoreValue);
-				editor.putString("scale_set", String.valueOf(mRestoreValue));
+				//editor.putString("scale_set", String.valueOf(mRestoreValue));
 			} else {
 				// click cancel without any other operations
 				int value = mSeekBar.getProgress() + 80;
 				setHdmiScreenScale(HdmiScale, value);
-				editor.putString("scale_set", String.valueOf(value));
+				//editor.putString("scale_set", String.valueOf(value));
 			}
 		}
-		editor.commit();
+		//editor.commit();
 	}
+	
+	private class HdmiScaleTask extends AsyncTask<String, Void, Void>{
+
+		@Override
+		protected Void doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			try {
+				//StringBuffer strbuf = new StringBuffer("");
+				//strbuf.append(params[0]);
+				OutputStream output = null;
+				OutputStreamWriter outputWrite = null;
+				PrintWriter print = null;
+
+				try {
+					// SystemProperties.set("sys.hdmi_screen.scale",String.valueOf(value));
+					output = new FileOutputStream(HdmiScale);
+					outputWrite = new OutputStreamWriter(output);
+					print = new PrintWriter(outputWrite);
+                    Log.d(TAG,"scale value="+params[0]);
+					print.print(params[0]);
+					print.flush();
+					outputWrite.close();
+					print.close();
+					output.close();
+					preferences.edit().putString("scale_set", params[0]).commit();
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
+			} catch (IOException e) {
+				Log.e(TAG, "IO Exception");
+			}
+			return null;
+
+		}
+		
+	}
+	
 }
