@@ -105,7 +105,7 @@ public class MasterClearConfirm extends Fragment {
     private void doMasterClear() {
         if (mEraseSdCard) {
             Intent intent = new Intent(ExternalStorageFormatter.FORMAT_AND_FACTORY_RESET);
-            intent.putExtra(Intent.EXTRA_REASON, "MasterClearConfirm");
+            intent.putExtra(Intent.EXTRA_REASON, "WipeAllFlash");
             intent.setComponent(ExternalStorageFormatter.COMPONENT_NAME);
             getActivity().startService(intent);
         } else {
