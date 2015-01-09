@@ -91,7 +91,7 @@ public class UsbSettings extends SettingsPreferenceFragment {
 			    String flashState =mMountService.getVolumeState(flashPratition);
 			    if(!"mounted".equals(flashState) && !"shared".equals(flashState))
 			    {
-				    BuildWithUMS = "false";
+				    //BuildWithUMS = "false";
 				    Log.d(TAG,"boardconfig set enable UMS,but flash partition is not mounted,disable UMS");
 			    }
 		    }
