@@ -113,6 +113,7 @@ import com.android.settings.wifi.SavedAccessPointsWifiSettings;
 import com.android.settings.wifi.WifiSettings;
 import com.android.settings.wifi.p2p.WifiP2pSettings;
 import com.android.settings.HdmiSettings;
+import com.android.settings.ScreenshotSetting;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -121,6 +122,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import android.os.SystemProperties;
 
 import static com.android.settings.dashboard.DashboardTile.TILE_ID_UNDEFINED;
 
@@ -240,7 +242,8 @@ public class SettingsActivity extends Activity
             R.id.nfc_payment_settings,
             R.id.home_settings,
             R.id.dashboard,
-            R.id.hdmi_settings
+            R.id.hdmi_settings,
+            R.id.screenshot_settings
     };
 
     private static final String[] ENTRY_FRAGMENTS = {
@@ -305,7 +308,8 @@ public class SettingsActivity extends Activity
             OtherSoundSettings.class.getName(),
             QuickLaunchSettings.class.getName(),
             ApnSettings.class.getName(),
-            HdmiSettings.class.getName()
+            HdmiSettings.class.getName(),
+            ScreenshotSetting.class.getName()
     };
 
 
@@ -1163,7 +1167,7 @@ public class SettingsActivity extends Activity
                     }
                 } else if (id == R.id.bluetooth_settings) {
                     // Remove Bluetooth Settings if Bluetooth service is not available.
-                    if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)) {
+                    if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH)||(SystemProperties.get("ro.rk.bt_enable", "true").equals("false"))) {
                         removeTile = true;
                     }
                 } else if (id == R.id.data_usage_settings) {
@@ -1220,6 +1224,14 @@ public class SettingsActivity extends Activity
                             UserManager.DISALLOW_DEBUGGING_FEATURES)) {
                         removeTile = true;
                     }
+                } else if(id ==R.id.hdmi_settings){
+                     if (SystemProperties.get("ro.rk.hdmi_enable", "true").equals("false")){
+                        removeTile = true;
+                     }
+                } else if(id ==R.id.screenshot_settings){
+                     if (SystemProperties.get("ro.rk.screenshot_enable", "true").equals("false")){
+                        removeTile = true;
+                     }
                 }
 
                 if (UserHandle.MU_ENABLED && UserHandle.myUserId() != 0
