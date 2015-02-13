@@ -1052,6 +1052,7 @@
     <string name="tether_settings_title_bluetooth" msgid="355855408317564420">"蓝牙网络共享"</string>
     <string name="tether_settings_title_usb_bluetooth" msgid="5355828977109785001">"网络共享"</string>
     <string name="tether_settings_title_all" msgid="8356136101061143841">"网络共享与便携式热点"</string>
+    <string name="ethernet_settings_title"  >"以太网"</string>
     <string name="usb_title" msgid="7483344855356312510">"USB"</string>
     <string name="usb_tethering_button_text" msgid="585829947108007917">"USB网络共享"</string>
     <string name="usb_tethering_available_subtext" msgid="156779271296152605">"已连接USB，选中即可共享网络"</string>
