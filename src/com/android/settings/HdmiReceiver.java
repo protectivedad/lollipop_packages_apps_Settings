@@ -84,6 +84,20 @@ public class HdmiReceiver extends BroadcastReceiver {
 							+ String.valueOf(scale) + " resol="
 							+ String.valueOf(resol));
 		}else if(action.equals(BOOT_ACTION)){
+                         Log.d(TAG,"BOOT_COMPLETED");
+                         preferences = context.getSharedPreferences("HdmiSettings",
+                                Context.MODE_PRIVATE);
+                         String enable = null;
+                         String scale = null;
+                         String resol = null;
+                         enable = preferences.getString("enable", "1");
+                         if(enable.equals("1")){
+                                resol = preferences.getString("resolution", null);
+                                scale = preferences.getString("scale_set", "100");
+                                restoreHdmiValue(HdmiDisplayEnable, enable, "enable");
+                                restoreHdmiValue(HdmiDisplayMode, resol, "hdmi_resolution");
+                                restoreHdmiValue(HdmiDisplayScale, scale, "hdmi_scale");
+                          }
 			InitDualModeTask initDualModeTask=new InitDualModeTask();
 			initDualModeTask.execute();
 		}
