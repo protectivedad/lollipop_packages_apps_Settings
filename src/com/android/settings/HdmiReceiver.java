@@ -56,10 +56,10 @@ public class HdmiReceiver extends BroadcastReceiver {
 			String enable = null;
 			String scale = null;
 			String resol = null;
-			int state = intent.getIntExtra("state", 1);
+			int state = intent.getIntExtra("state", 0);
 			if (state == 1) {
 				enable = preferences.getString("enable", "1");
-				resol = preferences.getString("resolution", null);
+				resol = preferences.getString("resolution", "1280x720p-60").trim()+"\n";
 				scale = preferences.getString("scale_set", "100");
 				restoreHdmiValue(HdmiDisplayEnable, enable, "enable");
 				restoreHdmiValue(HdmiDisplayMode, resol, "hdmi_resolution");
@@ -82,7 +82,7 @@ public class HdmiReceiver extends BroadcastReceiver {
 			Log.d(TAG,
 					"enable =" + String.valueOf(enable) + " scale="
 							+ String.valueOf(scale) + " resol="
-							+ String.valueOf(resol));
+							+ String.valueOf(resol)+"resol_length=" +resol.length());
 		}else if(action.equals(BOOT_ACTION)){
                          Log.d(TAG,"BOOT_COMPLETED");
                          preferences = context.getSharedPreferences("HdmiSettings",
@@ -90,13 +90,13 @@ public class HdmiReceiver extends BroadcastReceiver {
                          String enable = null;
                          String scale = null;
                          String resol = null;
-                         enable = preferences.getString("enable", "1");
+                         enable = preferences.getString("enable", "0");
                          if(enable.equals("1")){
-                                resol = preferences.getString("resolution", null);
+                                resol = preferences.getString("resolution", "1280x720p-60").trim()+"\n";
                                 scale = preferences.getString("scale_set", "100");
-                                restoreHdmiValue(HdmiDisplayEnable, enable, "enable");
                                 restoreHdmiValue(HdmiDisplayMode, resol, "hdmi_resolution");
                                 restoreHdmiValue(HdmiDisplayScale, scale, "hdmi_scale");
+                                restoreHdmiValue(HdmiDisplayEnable, enable, "enable");
                           }
 			InitDualModeTask initDualModeTask=new InitDualModeTask();
 			initDualModeTask.execute();
