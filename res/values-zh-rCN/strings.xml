@@ -2534,4 +2534,57 @@
     <string name="screenshot_version">截屏管理器版本</string>
     <string name="screenshot_storage_title">设置截屏图片存储位置</string>
     <string name="later">秒以后截屏</string>
+
+      <!-- ethernet settings by blb-->
+     <string name="ethernet_settings">以太网</string>
+     <string name="ethernet_connect">连接</string>
+     <string name="ethernet_cancel">取消</string>
+     <!--Wireless controls screen, settings summary for the item tot ake you to the ethernet settings screen -->
+     <string name="ethernet_settings_summary">Manager ethernet</string>
+     <!-- ethernet hw address  -->
+     <string name="ethernet_hw_addr">MAC地址</string>
+     <!-- ethernet ip address  -->
+     <string name="ethernet_ip_addr">IP地址</string>
+     <!-- ethernet netmask  -->
+     <string name="ethernet_netmask">子网掩码</string>
+     <!-- ethernet gateway  -->
+     <string name="ethernet_gateway">网关</string>
+     <!-- ethernet dns1  -->
+     <string name="ethernet_dns1">dns1</string>
+     <!-- ethernet dns2 -->
+     <string name="ethernet_dns2">dns2</string>
+     <string name="category_ethernet">Static IP Setttings</string>
+     <string name="usedhcp">动态获取</string>
+     <string name="usestatic">静态地址</string> 
+     <string name="ethernet_use_static_ip">静态IP地址</string>
+     <string name="ethernet_ip_address">IP地址</string>
+     <string name="staticip_save">保存</string>   
+     <string name="staticip_cancel">取消</string>
+     <string name="str_ok">确定</string>  
+     <string name="str_cancel">取消</string>
+     <string name="str_about">Important</string>
+     <string name="str_mesg">Whether save Settings?</string>
+     <string name="save_failed">保存失败!</string>
+     <string name="ethernet_ip_settings_invalid_ip">请输入IP地址.</string>
+     <string name="eth_ip_settings_please_complete_settings">请填写完整!</string>
+     <string name="ethernet_quick_toggle_title">以太网</string>
+     <!-- Ethernet settings check box summary for turning on ethernet -->
+     <string name="ethernet_quick_toggle_summary_off">已关闭</string>
+     <!--Used as title on second screen after selecting Ethernet settings -->
+     <string name="ethernet_quick_toggle_summary_on">已启用</string>
+     <!--Used as title on second screen after selecting Ethernet settings -->
+     <string name="ethernet_mode_title">以太网模式</string>   
+
+    <!--$_rbox_$_modify_$_zhangxueguang_$_begin_$_20120319_$-->
+    <!-- sound devices manager -->
+    <string name="sound_devices_manager">音频设备管理</string>
+    <string name="sound_devices_title">音频设备管理</string>
+    <string name="sound_devices_manager_title">音频设备管理</string>
+    <string name="sound_input_devices">音频输入设备</string>
+    <string name="sound_output_devices">音频输出设备</string>
+    <string name="sound_output_default">默认输出</string>
+    <string name="sound_output_hdmi_passthrough">HDMI源码输出</string>
+    <string name="sound_output_spdif_passthrough">Spdif源码输出</string>
+    <string name="sound_output_hdmi_multilpcm">混合输出</string>
+    <!--$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$--> 
 </resources>

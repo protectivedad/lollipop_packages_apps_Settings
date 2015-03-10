@@ -2113,5 +2113,16 @@
             <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
                 android:value="true" />
         </activity>
+
+     <!--$_rbox_$_modify_$_zhangxueguang_$_begin_$_20120319_$-->
+      <!-- SoundDevicesManager -->
+        <activity android:name=".SoundDevicesManager"
+                  android:label="@string/sound_devices_manager"
+                  >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>    
+        <!--$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$-->
     </application>
 </manifest>

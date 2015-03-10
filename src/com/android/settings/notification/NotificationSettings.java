@@ -60,6 +60,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import android.os.SystemProperties;
+
 public class NotificationSettings extends SettingsPreferenceFragment implements Indexable {
     private static final String TAG = "NotificationSettings";
 
@@ -75,7 +77,10 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
     private static final String KEY_NOTIFICATION_PULSE = "notification_pulse";
     private static final String KEY_LOCK_SCREEN_NOTIFICATIONS = "lock_screen_notifications";
     private static final String KEY_NOTIFICATION_ACCESS = "manage_notification_access";
-
+    /*$_rbox_$_modify_$_zhangxueguang_$_begin_$_20120319_$*/
+    private static final String KEY_SOUND_MANAGE = "sound_manage";
+    private static final String KEY_SOUND_DEVICES = "sound_devices";
+    /*$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$*/
     private static final int SAMPLE_CUTOFF = 2000;  // manually cap sample playback at 2 seconds
 
     private final VolumePreferenceCallback mVolumeCallback = new VolumePreferenceCallback();
@@ -93,6 +98,10 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
 
     private Preference mPhoneRingtonePreference;
     private Preference mNotificationRingtonePreference;
+    /*$_rbox_$_modify_$_zhangxueguang_$_begin_$_20120319_$*/
+    private Preference mSoundDevices;
+    /*$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$*/
+ 
     private TwoStatePreference mVibrateWhenRinging;
     private TwoStatePreference mNotificationPulse;
     private DropDownPreference mLockscreen;
@@ -146,6 +155,17 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
         refreshNotificationListeners();
         updateRingerMode();
         updateEffectsSuppressor();
+        /*$_rbox_$_modify_$_zhangxueguang_$_begin_$_20120409_$*/
+        PreferenceCategory soundmange = (PreferenceCategory) findPreference(KEY_SOUND_MANAGE);
+        mSoundDevices = findPreference(KEY_SOUND_DEVICES);
+        if(!"box".equals(SystemProperties.get("ro.target.product","tablet"))){
+          getPreferenceScreen().removePreference(mSoundDevices);
+          getPreferenceScreen().removePreference(soundmange);
+          soundmange = null;
+          mSoundDevices = null;
+          Log.d(TAG,"remove SoundDevices======"); 
+         }
+        /*$_rbox_$_modify_$_zhangxueguang_$_end_$_20120409_$*/
     }
 
     @Override
@@ -260,7 +280,7 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
 
     private void initRingtones(PreferenceCategory root) {
         mPhoneRingtonePreference = root.findPreference(KEY_PHONE_RINGTONE);
-        if (mPhoneRingtonePreference != null && !mVoiceCapable) {
+        if (mPhoneRingtonePreference != null && !mVoiceCapable && "box".equals(SystemProperties.get("ro.target.product","tablet"))) {
             root.removePreference(mPhoneRingtonePreference);
             mPhoneRingtonePreference = null;
         }

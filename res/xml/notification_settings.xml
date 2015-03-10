@@ -118,5 +118,19 @@
                 android:fragment="com.android.settings.notification.NotificationAccessSettings" />
 
     </PreferenceCategory>
+    <!--$_rbox_$_modify_$_zhangxueguang_$_begin_$_20120319_$-->
+    <PreferenceCategory
+        android:key="sound_manage"
+        android:title="@string/sound_devices_title"/>
 
+    <Preference
+            android:key="sound_devices"
+            android:title="@string/sound_devices_manager_title"
+            android:persistent="false">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.android.settings"
+            android:targetClass="com.android.settings.SoundDevicesManager" />
+    </Preference>
+    <!--$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$-->
 </PreferenceScreen>
