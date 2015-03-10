@@ -2124,5 +2124,16 @@
             </intent-filter>
         </activity>    
         <!--$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$-->
+      <!--$_rbox_$_modify_$_chenzhi_2012014: add for usb host/device switch-->
+        <!--$_rbox_$_modify_$_begin-->
+         <activity android:name="Settings$UsbConnectSettingsActivity"
+                android:label="@string/usb_settings">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.VOICE_LAUNCH" />
+            </intent-filter>
+        </activity>
+       <!--$_rbox_$_modify_$_end-->
     </application>
 </manifest>

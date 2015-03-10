@@ -114,6 +114,7 @@ import com.android.settings.wifi.WifiSettings;
 import com.android.settings.wifi.p2p.WifiP2pSettings;
 import com.android.settings.HdmiSettings;
 import com.android.settings.ScreenshotSetting;
+import com.android.settings.UsbSetting;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -309,7 +310,8 @@ public class SettingsActivity extends Activity
             QuickLaunchSettings.class.getName(),
             ApnSettings.class.getName(),
             HdmiSettings.class.getName(),
-            ScreenshotSetting.class.getName()
+            ScreenshotSetting.class.getName(),
+            UsbSetting.class.getName()
     };
 
 
@@ -1230,6 +1232,10 @@ public class SettingsActivity extends Activity
                      }
                 } else if(id ==R.id.screenshot_settings){
                      if (SystemProperties.get("ro.rk.screenshot_enable", "true").equals("false")){
+                        removeTile = true;
+                     }
+                } else if(id ==R.id.usb_settings){
+                     if (!"box".equals(SystemProperties.get("ro.target.product", "tablet"))){
                         removeTile = true;
                      }
                 }

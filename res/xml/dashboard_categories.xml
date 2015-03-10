@@ -83,6 +83,14 @@
                 android:fragment="com.android.settings.HomeSettings"
                 android:icon="@drawable/ic_settings_home"
                 />
+  
+        <!-- Usb switch -->
+        <dashboard-tile
+                android:id="@+id/usb_settings"
+                android:title="@string/usb_settings"
+                android:fragment="com.android.settings.UsbSetting"
+                android:icon="@drawable/ic_settings_usb"
+                />
 
         <!-- Display -->
         <dashboard-tile

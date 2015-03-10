@@ -6123,4 +6123,11 @@
     <string name="sound_output_spdif_passthrough">Spdif Passthrough</string>
     <string name="sound_output_hdmi_multilpcm">HDMI Multi Lpcm</string>
     <!--$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$-->
+
+     <!--$_rbox_$_modify_$_chenzhi_20120314: add for usb host/device switch-->
+    <!--$_rbox_$_modify_$_begin-->
+    <!-- usb settings -->
+    <string name="usb_settings">USB</string>
+    <string name="connect_to_pc">Connect to PC</string>
+    <!--$_rbox_$_modify_$_end-->
 </resources>

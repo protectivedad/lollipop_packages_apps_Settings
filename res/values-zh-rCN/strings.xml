@@ -2586,5 +2586,12 @@
     <string name="sound_output_hdmi_passthrough">HDMI源码输出</string>
     <string name="sound_output_spdif_passthrough">Spdif源码输出</string>
     <string name="sound_output_hdmi_multilpcm">混合输出</string>
-    <!--$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$--> 
+    <!--$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$-->
+    
+     <!--$_rbox_$_modify_$_chenzhi_20120314: add for usb host/device switch-->
+    <!--$_rbox_$_modify_$_begin-->
+    <!-- usb settings -->
+    <string name="usb_settings">USB</string>
+    <string name="connect_to_pc">连接到 PC</string>
+    <!--$_rbox_$_modify_$_end--> 
 </resources>
