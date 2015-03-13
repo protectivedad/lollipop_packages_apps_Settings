@@ -45,6 +45,8 @@ import android.widget.Toast;
 import android.content.ContentResolver;
 import android.os.Handler;
 import android.database.ContentObserver;
+import android.os.RemoteException;
+import android.os.DisplayOutputManager;
 
 public class HdmiSettings extends SettingsPreferenceFragment
 		implements OnPreferenceChangeListener,SwitchBar.OnSwitchChangeListener {
@@ -62,6 +64,7 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	private ListPreference mHdmiResolution;
 	private ListPreference mHdmiLcd;
 	private Preference mHdmiScale;
+	private DisplayOutputManager mDisplayManagement = null;
 
 	private File HdmiDisplayModes=null;
 	private Context context;
@@ -90,6 +93,11 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		editor = sharedPreferences.edit();
 		// addPreferencesFromResource(R.xml.hdmi_settings);
 		addPreferencesFromResource(R.xml.hdmi_settings_timeout);
+		try {
+			mDisplayManagement = new DisplayOutputManager();
+		}catch (RemoteException doe) {
+			
+		}
 		mHdmiLcd = (ListPreference) findPreference(KEY_HDMI_LCD);
 		HdmiDisplayModes = new File("sys/class/display/HDMI/modes");
 		mHdmiResolution = (ListPreference) findPreference(KEY_HDMI_RESOLUTION);
@@ -231,11 +239,13 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		// TODO Auto-generated method stub
 		String key = preference.getKey();
 		if (KEY_HDMI_RESOLUTION.equals(key)) {
+			mDisplayManagement.setMode(mDisplayManagement.MAIN_DISPLAY,4,(String)objValue);
+			/*
 			try {
 				setHdmiMode((String)objValue);
 			} catch (NumberFormatException e) {
 				Log.e(TAG, "onPreferenceChanged hdmi_resolution setting error");
-			}
+			}*/
 		}
 
 		if (KEY_HDMI_LCD.equals(key)) {
@@ -265,8 +275,13 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	}
 
 	private String[] getModes() {
+		String[] modelist = mDisplayManagement.getModeList(mDisplayManagement.MAIN_DISPLAY,4);
+		return modelist;
+		/*
 		ArrayList<String> list = new ArrayList<String>();
 		try {
+			//SetModeList(mDisplayManagement.MAIN_DISPLAY,1);
+
 			FileReader fread = new FileReader(HdmiDisplayModes);
 			BufferedReader buffer = new BufferedReader(fread);
 			String str = null;
@@ -280,6 +295,7 @@ public class HdmiSettings extends SettingsPreferenceFragment
 			Log.e(TAG, "IO Exception");
 		}
 		return list.toArray(new String[list.size()]);
+		*/
 	}
 	
 
@@ -289,8 +305,8 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		@Override
 		protected String doInBackground(String... params) {
 			// TODO Auto-generated method stub
-			try {
-				Log.d(TAG, "setHdmiConfig");
+			/*try {
+				
 				RandomAccessFile rdf = null;
 				rdf = new RandomAccessFile(mHdmiEnableFlieName, "rw");
 				rdf.writeBytes(params[0]);
@@ -300,7 +316,17 @@ public class HdmiSettings extends SettingsPreferenceFragment
 			} catch (IOException re) {
 				Log.e(TAG, "IO Exception");
 				re.printStackTrace();
-			}
+			}*/
+			Log.d(TAG, "setHdmiConfig");
+			int enable = (Integer.parseInt(params[0]));
+			boolean test = false;
+			if(enable > 0)
+				test = true;
+			else if(enable <=0)
+				test = false;
+			mDisplayManagement.setInterface(mDisplayManagement.MAIN_DISPLAY,4,test);
+			editor.putString("enable", "1");
+			editor.commit();
 			return params[0];
 		}
 		

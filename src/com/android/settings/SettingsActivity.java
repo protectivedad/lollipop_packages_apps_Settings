@@ -1227,7 +1227,8 @@ public class SettingsActivity extends Activity
                         removeTile = true;
                     }
                 } else if(id ==R.id.hdmi_settings){
-                     if (SystemProperties.get("ro.rk.hdmi_enable", "true").equals("false")){
+                     boolean isTablet = "box".equals(SystemProperties.get("ro.target.product", "tablet"));
+                     if (isTablet || SystemProperties.get("ro.rk.hdmi_enable", "true").equals("false")){
                         removeTile = true;
                      }
                 } else if(id ==R.id.screenshot_settings){
