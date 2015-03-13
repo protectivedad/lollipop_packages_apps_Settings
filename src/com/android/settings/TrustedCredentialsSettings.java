@@ -445,6 +445,9 @@ public class TrustedCredentialsSettings extends Fragment {
                     for (int i = 0; i < n; ++i) {
                         UserHandle profile = profiles.get(i);
                         int profileId = profile.getIdentifier();
+                         if(getActivity()==null){
+                               this.cancel(true);
+                        }
                         KeyChainConnection keyChainConnection = KeyChain.bindAsUser(mContext,
                                 profile);
                         // Saving the connection for later use on the certificate dialog.
