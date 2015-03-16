@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import javax.annotation.concurrent.GuardedBy;
 
 /**
@@ -375,17 +377,63 @@ public class StorageMeasurement {
                 }
             }
         }
+ 
+        
+        //$_rbox_$_modify_$_by cx
+        private ArrayList<String> getRealUsbPath(String path) {
+               ArrayList<String> pathlist = new ArrayList<String>();
+               if (path == null) return pathlist;
+               Runtime runtime = Runtime.getRuntime();
+               String prog = "mount | grep " + path + " | busybox awk '{print $2}'";
+               Log.d(TAG,"runtime exec = " + prog);
+               String[] cmds = {"sh","-c",prog};
+               try {
+                       Process process = runtime.exec(cmds);
+                       InputStreamReader reader = new InputStreamReader(process.getInputStream());
+                       BufferedReader buffered = new BufferedReader(reader);
+                       String line;
+                       while ((line = buffered.readLine()) != null) {
+                               Log.d(TAG,"read line = " + line);
+                               if (line.startsWith(path)) {
+                                       pathlist.add(line);
+                               }
+                       }
+                       Log.d(TAG,"path = " + path);
+               } catch (Exception e) {
+                       Log.d(TAG,"runtime error = " + e);
+               }
+               return pathlist;
+        }
+        //$_rbox_$_modify_$_end
 
         private void measureApproximateStorage(IMediaContainerService imcs) {
             final String path = mVolume != null ? mVolume.getPath()
                     : Environment.getDataDirectory().getPath();
-            try {
-                final long[] stats = imcs.getFileSystemStats(path);
-                mTotalSize = stats[0];
-                mAvailSize = stats[1];
-            } catch (Exception e) {
-                Log.w(TAG, "Problem in container service", e);
-            }
+            boolean isBox = "box".equals(android.os.SystemProperties.get("ro.target.product", "tablet"));
+            //$_rbox_$_modify_$_by cx
+            if (isBox && path.indexOf("usb_storage") > -1) {
+                mTotalSize = 0;
+                mAvailSize = 0;
+               ArrayList<String> list = getRealUsbPath(path);
+               for (int i = 0; i < list.size(); i++) {
+                       try {
+                       long[] stats = imcs.getFileSystemStats(list.get(i));
+                       mTotalSize += stats[0];
+                       mAvailSize += stats[1];
+                   } catch (Exception e) {
+                       Log.w(TAG, "Problem in container service", e);
+                   }
+               }
+            } else {           
+                   try {
+                       final long[] stats = imcs.getFileSystemStats(path);
+                       mTotalSize = stats[0];
+                       mAvailSize = stats[1];
+                   } catch (Exception e) {
+                       Log.w(TAG, "Problem in container service", e);
+                   }
+             }
+            //$_rbox_$_modify_$_end
 
             sendInternalApproximateUpdate();
         }

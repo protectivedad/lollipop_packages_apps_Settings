@@ -201,16 +201,38 @@ public class StorageVolumePreferenceCategory extends PreferenceCategory {
         // Always create the preference since many code rely on it existing
         mMountTogglePreference = new Preference(context);
         if (isRemovable) {
-            mMountTogglePreference.setTitle(R.string.sd_eject);
-            mMountTogglePreference.setSummary(R.string.sd_eject_summary);
+            //mMountTogglePreference.setTitle(R.string.sd_eject);
+            //mMountTogglePreference.setSummary(R.string.sd_eject_summary);
+           //$_rbox_$_modify_$_lly_$_begin_$
+            if (mVolume.getPath().indexOf("internal_sd") > -1){
+                mMountTogglePreference.setTitle(R.string.nand_flash_eject);
+                mMountTogglePreference.setSummary(R.string.nand_flash_eject_summary);
+            } else if(mVolume.getPath().indexOf("external_sd") > -1){
+                   mMountTogglePreference.setTitle(R.string.sd_eject);
+                   mMountTogglePreference.setSummary(R.string.sd_eject_summary);
+            } else if(mVolume.getPath().indexOf("usb_storage") > -1){
+               mMountTogglePreference.setTitle(R.string.usb_eject);
+                   mMountTogglePreference.setSummary(R.string.usb_eject_summary);
+            }
             addPreference(mMountTogglePreference);
         }
 
         final boolean allowFormat = mVolume != null;
         if (allowFormat) {
             mFormatPreference = new Preference(context);
-            mFormatPreference.setTitle(R.string.sd_format);
-            mFormatPreference.setSummary(R.string.sd_format_summary);
+           // mFormatPreference.setTitle(R.string.sd_format);
+           //mFormatPreference.setSummary(R.string.sd_format_summary);
+           if (mVolume.getPath().indexOf("internal_sd") > -1){
+                mFormatPreference.setTitle(R.string.nand_flash_format);
+                mFormatPreference.setSummary(R.string.nand_flash_format_summary);
+            } else if(mVolume.getPath().indexOf("external_sd") > -1){
+                   mFormatPreference.setTitle(R.string.sd_format);
+                   mFormatPreference.setSummary(R.string.sd_format_summary);
+            } else if(mVolume.getPath().indexOf("usb_storage") > -1){
+               mFormatPreference.setTitle(R.string.usb_format);
+                   mFormatPreference.setSummary(R.string.usb_format_summary);
+            }
+           //$_rbox_$_modify_lly_$_end_$
             addPreference(mFormatPreference);
         }
 
@@ -251,8 +273,19 @@ public class StorageVolumePreferenceCategory extends PreferenceCategory {
         if (Environment.MEDIA_MOUNTED.equals(state)
                 || Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
             mMountTogglePreference.setEnabled(true);
-            mMountTogglePreference.setTitle(mResources.getString(R.string.sd_eject));
-            mMountTogglePreference.setSummary(mResources.getString(R.string.sd_eject_summary));
+            //mMountTogglePreference.setTitle(mResources.getString(R.string.sd_eject));
+            //mMountTogglePreference.setSummary(mResources.getString(R.string.sd_eject_summary));
+            //$_rbox_$_modify_$_lly_$_begin_$
+            if (mVolume.getPath().indexOf("internal_sd") > -1) {
+                mMountTogglePreference.setTitle(R.string.nand_flash_eject);
+                mMountTogglePreference.setSummary(R.string.nand_flash_eject_summary);
+            } else if (mVolume.getPath().indexOf("external_sd") > -1) {
+                   mMountTogglePreference.setTitle(mResources.getString(R.string.sd_eject));
+                   mMountTogglePreference.setSummary(mResources.getString(R.string.sd_eject_summary));
+            } else if (mVolume.getPath().indexOf("usb_storage") > -1) {
+               mMountTogglePreference.setTitle(mResources.getString(R.string.usb_eject));
+                   mMountTogglePreference.setSummary(mResources.getString(R.string.usb_eject_summary));
+            }
             addPreference(mUsageBarPreference);
             addPreference(mItemTotal);
             addPreference(mItemAvailable);
@@ -260,12 +293,32 @@ public class StorageVolumePreferenceCategory extends PreferenceCategory {
             if (Environment.MEDIA_UNMOUNTED.equals(state) || Environment.MEDIA_NOFS.equals(state)
                     || Environment.MEDIA_UNMOUNTABLE.equals(state)) {
                 mMountTogglePreference.setEnabled(true);
-                mMountTogglePreference.setTitle(mResources.getString(R.string.sd_mount));
-                mMountTogglePreference.setSummary(mResources.getString(R.string.sd_mount_summary));
+                //mMountTogglePreference.setTitle(mResources.getString(R.string.sd_mount));
+                //mMountTogglePreference.setSummary(mResources.getString(R.string.sd_mount_summary));
+                 if (mVolume.getPath().indexOf("internal_sd") > -1) {
+                     mMountTogglePreference.setTitle(mResources.getString(R.string.nand_flash_mount));
+                     mMountTogglePreference.setSummary(mResources.getString(R.string.nand_flash_mount_summary));
+                 } else if(mVolume.getPath().indexOf("external_sd") > -1){
+                         mMountTogglePreference.setTitle(mResources.getString(R.string.sd_mount));
+                         mMountTogglePreference.setSummary(mResources.getString(R.string.sd_mount_summary));
+                 } else if (mVolume.getPath().indexOf("usb_storage") > -1) {
+                         mMountTogglePreference.setTitle(mResources.getString(R.string.usb_mount));
+                         mMountTogglePreference.setSummary(mResources.getString(R.string.usb_mount_summary));
+                 }
             } else {
                 mMountTogglePreference.setEnabled(false);
-                mMountTogglePreference.setTitle(mResources.getString(R.string.sd_mount));
-                mMountTogglePreference.setSummary(mResources.getString(R.string.sd_insert_summary));
+               // mMountTogglePreference.setTitle(mResources.getString(R.string.sd_mount));
+               // mMountTogglePreference.setSummary(mResources.getString(R.string.sd_insert_summary));
+               if (mVolume.getPath().indexOf("internal_sd") > -1) {
+                     mMountTogglePreference.setTitle(mResources.getString(R.string.nand_flash_mount));
+                     mMountTogglePreference.setSummary(mResources.getString(R.string.nand_flash_mount_summary));
+                 } else if (mVolume.getPath().indexOf("external_sd") > -1) {
+                         mMountTogglePreference.setTitle(mResources.getString(R.string.sd_mount));
+                         mMountTogglePreference.setSummary(mResources.getString(R.string.sd_insert_summary));
+                 } else if (mVolume.getPath().indexOf("usb_storage") > -1) {
+                         mMountTogglePreference.setTitle(mResources.getString(R.string.usb_mount));
+                         mMountTogglePreference.setSummary(mResources.getString(R.string.usb_insert_summary));
+                 }
             }
 
             removePreference(mUsageBarPreference);
@@ -287,8 +340,16 @@ public class StorageVolumePreferenceCategory extends PreferenceCategory {
                 mFormatPreference.setSummary(mResources.getString(R.string.mtp_ptp_mode_summary));
             }
         } else if (mFormatPreference != null) {
-            mFormatPreference.setEnabled(mMountTogglePreference.isEnabled());
-            mFormatPreference.setSummary(mResources.getString(R.string.sd_format_summary));
+            //mFormatPreference.setEnabled(mMountTogglePreference.isEnabled());
+            //mFormatPreference.setSummary(mResources.getString(R.string.sd_format_summary));
+           if (mVolume.getPath().indexOf("internal_sd" ) > -1) {
+                 mFormatPreference.setSummary(mResources.getString(R.string.nand_flash_format_summary));
+             } else if (mVolume.getPath().indexOf("external_sd") > -1){
+                 mFormatPreference.setSummary(mResources.getString(R.string.sd_format_summary));
+             } else if (mVolume.getPath().indexOf("usb_storage") > -1){
+                mFormatPreference.setSummary(mResources.getString(R.string.usb_format_summary));
+             }
+           //$_rbox_$_modify_$_lijiehong_$_end_$
         }
     }
 
@@ -309,6 +370,10 @@ public class StorageVolumePreferenceCategory extends PreferenceCategory {
 
     private static long totalValues(HashMap<String, Long> map, String... keys) {
         long total = 0;
+        //$_rbox_$_modify_$_lijiehong_$_begin_$
+         if(map==null)
+             return 0;
+ //$_rbox_$_modify_$_lijiehong_$_end_$
         for (String key : keys) {
             if (map.containsKey(key)) {
                 total += map.get(key);

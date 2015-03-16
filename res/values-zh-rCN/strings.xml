@@ -2612,4 +2612,20 @@
     <string name="screen_control_cancel_title">还原</string>
     <string name="screenscale">屏幕缩放</string>
     <!-- $_rbox_$_modify_$_zhengyang: end for screen settings -->
+    
+   <!-- $_rbox_$_modify_$_by cx -->
+     <string name="nand_flash_eject">卸载 Nand Flash</string>
+     <string name="nand_flash_eject_summary">卸载内部 nand flash 存储</string>
+     <string name="nand_flash_format">格式化 Nand Flash</string>
+     <string name="nand_flash_format_summary">格式化 Nand Flash 上的所有数据, 比如音乐、图片、视频等</string>
+     <string name="nand_flash_mount">挂载 Nand Flash</string>
+     <string name="nand_flash_mount_summary">挂载 Nand Flash</string>
+     <string name="usb_eject">"卸载 USB 存储设备"</string>
+     <string name="usb_eject_summary">"需要先卸载 USB 存储设备，然后才能将其安全移除"</string>
+     <string name="usb_insert_summary">"插入要装载的 USB 存储设备"</string>
+     <string name="usb_mount">"装载 USB 存储设备"</string>
+     <string name="usb_mount_summary"></string>
+     <string name="usb_format">"格式化 USB 存储设备"</string>
+     <string name="usb_format_summary">"清除 USB 存储设备中的全部数据，例如音乐和照片"</string>
+     <!-- $_rbox_$_modify_$_end -->
 </resources>
