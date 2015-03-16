@@ -30,6 +30,7 @@ import java.io.RandomAccessFile;
 import static android.provider.Settings.System.HDMI_LCD_TIMEOUT;
 import android.widget.Toast;
 
+import android.os.DisplayOutputManager;
 import com.android.settings.R;
 
 public class HdmiReceiver extends BroadcastReceiver {
@@ -45,12 +46,18 @@ public class HdmiReceiver extends BroadcastReceiver {
 	private Context mcontext;
 	private SharedPreferences preferences;
 	private File DualModeFile = new File("/sys/class/graphics/fb0/dual_mode");
+	private DisplayOutputManager mDisplayManagement = null;
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		mcontext = context;
 		preferences = context.getSharedPreferences("HdmiSettings",
 				Context.MODE_PRIVATE);
 		String action=intent.getAction();
+	   	try {
+                       mDisplayManagement = new DisplayOutputManager();
+               	}catch (RemoteException doe) {
+               		mDisplayManagement = null;        
+               	}
 		Log.d(TAG,"hdmi receiver action="+action);
 		if (action.equals(HDMI_ACTION)) {
 			String enable = null;
@@ -106,6 +113,8 @@ public class HdmiReceiver extends BroadcastReceiver {
 
 
 	protected void restoreHdmiValue(final File file, final String value, final String style) {
+		if(mDisplayManagement != null)
+			return;	
 		Thread thread=new Thread(new Runnable() {
 			
 			@Override
