@@ -86,10 +86,10 @@ public class HdmiReceiver extends BroadcastReceiver {
 					(state == 1) ? R.string.hdmi_connect
 							: R.string.hdmi_disconnect);
 			Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
-			Log.d(TAG,
+		/*	Log.d(TAG,
 					"enable =" + String.valueOf(enable) + " scale="
 							+ String.valueOf(scale) + " resol="
-							+ String.valueOf(resol)+"resol_length=" +resol.length());
+							+ String.valueOf(resol)+"resol_length=" +resol.length());*/
 		}else if(action.equals(BOOT_ACTION)){
                          Log.d(TAG,"BOOT_COMPLETED");
                          preferences = context.getSharedPreferences("HdmiSettings",
