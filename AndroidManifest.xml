@@ -435,7 +435,7 @@
 
 
      <!--  <activity android:name="com.android.settings.pppoe.PppoeAccountsEditor" -->
-        <activity android:name=".pppoe.PppoeAccountsSettings" 
+        <activity android:name=".pppoe.PppoeAccountsEditor" 
                 android:theme="@android:style/Theme.Holo.DialogWhenLarge"
                 android:label="@string/pppoe_accounts_edit">
                 <intent-filter>
