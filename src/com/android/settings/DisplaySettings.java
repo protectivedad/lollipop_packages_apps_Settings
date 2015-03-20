@@ -785,6 +785,65 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
             boolean value = (Boolean) objValue;
             Settings.Secure.putInt(getContentResolver(), DOZE_ENABLED, value ? 1 : 0);
         }
+  //$_rbox_$_modify_$_hhq: move screensetting
+        //$_rbox_$_modify_$_begin
+		if ( key.equals(KEY_MAIN_DISPLAY_INTERFACE) ) {
+        	mMainDisplay.setValue((String)objValue);
+        	int iface = Integer.parseInt((String)objValue);
+        	mMainDisplay_set = iface;
+        	mMainModeList.setTitle(getIfaceTitle(iface) + " " + getString(R.string.screen_mode_title));
+        	SetModeList(mDisplayManagement.MAIN_DISPLAY, iface);
+        	String mode = mDisplayManagement.getCurrentMode(mDisplayManagement.MAIN_DISPLAY, iface);
+        	if(mode != null) {
+	       		mMainModeList.setValue(mode);
+        	}
+        }
+        if( key.equals(KEY_MAIN_DISPLAY_MODE) ) {
+        	String mode = (String)objValue;
+        	mMainModeList.setValue(mode);
+        	mMainMode_set = mode;
+        	mMainDisplay_last = mDisplayManagement.getCurrentInterface(mDisplayManagement.MAIN_DISPLAY);
+        	if( (mMainDisplay_set != mMainDisplay_last) || (mMainMode_last.equals(mMainMode_set) == false) ) {
+        		if(mMainDisplay_set != mMainDisplay_last) {
+        			mDisplayManagement.setInterface(mDisplayManagement.MAIN_DISPLAY, mMainDisplay_last, false);
+             		mTime = 30;
+        		} else
+             		mTime = 15;
+        		mDisplayManagement.setMode(mDisplayManagement.MAIN_DISPLAY, mMainDisplay_set, mMainMode_set);
+        		mDisplayManagement.setInterface(mDisplayManagement.MAIN_DISPLAY, mMainDisplay_set, true);
+	        	showDialog(DIALOG_ID_RECOVER);
+        	}
+        }
+        
+        if ( key.equals(KEY_AUX_DISPLAY_INTERFACE) ) {
+        	mAuxDisplay.setValue((String)objValue);
+        	int iface = Integer.parseInt((String)objValue);
+        	mAuxDisplay_set = iface;
+        	mAuxModeList.setTitle(getIfaceTitle(iface) + " " + getString(R.string.screen_mode_title));
+        	SetModeList(mDisplayManagement.AUX_DISPLAY, iface);
+        	String mode = mDisplayManagement.getCurrentMode(mDisplayManagement.AUX_DISPLAY, iface);
+        	if(mode != null) {
+	       		mAuxModeList.setValue(mode);
+        	}
+        }
+        if( key.equals(KEY_AUX_DISPLAY_MODE) ) {
+        	String mode = (String)objValue;
+        	mAuxModeList.setValue(mode);
+        	mAuxMode_set = mode;
+        	mAuxDisplay_last = mDisplayManagement.getCurrentInterface(mDisplayManagement.AUX_DISPLAY);
+        	if( (mAuxDisplay_set != mAuxDisplay_last) || (mAuxMode_last.equals(mAuxMode_set) == false) ) {
+        		if(mAuxDisplay_set != mAuxDisplay_last) {
+        			mDisplayManagement.setInterface(mDisplayManagement.AUX_DISPLAY, mAuxDisplay_last, false);
+             		mTime = 30;
+        		} else
+             		mTime = 15;
+        		mDisplayManagement.setMode(mDisplayManagement.AUX_DISPLAY, mAuxDisplay_set, mAuxMode_set);
+        		mDisplayManagement.setInterface(mDisplayManagement.AUX_DISPLAY, mAuxDisplay_set, true);
+	        	showDialog(DIALOG_ID_RECOVER);
+
+        	}
+        }
+        //$_rbox_$_modify_$_end
         return true;
     }
 
