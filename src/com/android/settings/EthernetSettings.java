@@ -147,7 +147,7 @@ public class EthernetSettings extends SettingsPreferenceFragment
 		break;
 	} 
 		
-	this.refreshUI();
+	refreshUI();
     }
 	
     @Override
@@ -183,7 +183,7 @@ public class EthernetSettings extends SettingsPreferenceFragment
         if (mEthCheckBox== null) {
             mEthCheckBox =  (SwitchPreference) findPreference("ethernet");
         }*/
-        getEthInfo();
+        handleEtherStateChange(mEthManager.getEthernetConnectState());
         refreshUI();
         log("resume");
         mContext.registerReceiver(mReceiver, mIntentFilter);
@@ -456,17 +456,18 @@ public class EthernetSettings extends SettingsPreferenceFragment
 		if (mEthHwAddress == null) mEthHwAddress = nullIpInfo;
 		*/
         IpAssignment mode =mEthManager.getConfiguration().getIpAssignment();
+        
 	   
          if ( mode== IpAssignment.DHCP) {
-			   /*
-			    * getEth from dhcp
-			    */
-               getEthInfoFromDhcp();
+	   /*
+	    * getEth from dhcp
+	   */
+            getEthInfoFromDhcp();
 	} else if(mode == IpAssignment.STATIC) {
-				   /*
-				    * TODO: get static IP
-				    */
-                 getEthInfoFromStaticIp();
+	   /*
+	    * TODO: get static IP
+	   */
+            getEthInfoFromStaticIp();
 	}     
     }
 
