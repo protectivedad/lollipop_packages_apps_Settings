@@ -1346,5 +1346,22 @@
     </string-array>
 <!--$_rbox_$_modify_$_end-->
 
-   
+    <string-array name="button_lights_timeout_entries">
+        <item>1.5 seconds</item>
+        <item>3 seconds</item>
+        <item>5 seconds</item>
+        <item>never</item>
+    </string-array>
+    <!-- Do not translate. -->
+    <string-array name="button_lights_timeout_values" translatable="false">
+        <!-- Do not translate. -->
+        <item>1500</item>
+        <!-- Do not translate. -->
+        <item>3000</item>
+        <!-- Do not translate. -->
+        <item>5000</item>
+        <!-- Do not translate. -->
+        <item>-1</item>
+     </string-array>
+
 </resources>

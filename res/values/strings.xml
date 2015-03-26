@@ -6231,4 +6231,11 @@
      <!--$_rbox_$_modify_$_end -->
 
    <string name="smsc_update_success">set smsc success</string>
+
+    <!-- button lights settings -->
+    <string name="button_lights_enable_title">Front touch button backlights</string>
+    <string name="button_lights_enable_summary">Menu, Home and Back key indicator</string>
+    <string name="button_lights_timeout_title">Front touch button backlights timeout</string>
+    <string name="button_lights_timeout_summary">After <xliff:g id="timeout">%s</xliff:g> off</string>
+    <string name="button_lights_timeout_never">Never</string>
 </resources>

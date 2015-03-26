@@ -2696,5 +2696,12 @@
      <string name="usb_format">"格式化 USB 存储设备"</string>
      <string name="usb_format_summary">"清除 USB 存储设备中的全部数据，例如音乐和照片"</string>
      <!-- $_rbox_$_modify_$_end -->
- 	<string name="smsc_update_success">设置短信中心地址成功</string>
+    <string name="smsc_update_success">设置短信中心地址成功</string>
+
+    <!-- button lights settings -->
+    <string name="button_lights_enable_title">前触摸按键背光灯</string>
+    <string name="button_lights_enable_summary">菜单, 桌面及返回 键指示</string>
+    <string name="button_lights_timeout_title">前触摸按键背光灯超时</string>
+    <string name="button_lights_timeout_summary"><xliff:g id="timeout">%s</xliff:g>后熄灭</string>
+    <string name="button_lights_timeout_never">永不超时</string>
 </resources>

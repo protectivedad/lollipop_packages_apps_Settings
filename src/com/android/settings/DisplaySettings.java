@@ -55,6 +55,7 @@ import android.util.Log;
 
 import android.preference.CheckBoxPreference;
 import java.util.ArrayList;
+import java.io.File;
 //$_rbox_$_modify_$_by aisx
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -70,8 +71,12 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
 
     /** If there is no setting in the provider, use this. */
     private static final int FALLBACK_SCREEN_TIMEOUT_VALUE = 30000;
+    /** If there is no setting in the provider, use this. */
+    private static final int FALLBACK_BUTTON_LIGHTS_TIMEOUT_VALUE = 1500;
 
     private static final String KEY_SCREEN_TIMEOUT = "screen_timeout";
+    private static final String KEY_BUTTON_LIGHTS_ENABLE = "button_lights_enable";
+    private static final String KEY_BUTTON_LIGHTS_TIMEOUT = "button_lights_timeout";
     private static final String KEY_FONT_SIZE = "font_size";
     private static final String KEY_SCREEN_SAVER = "screensaver";
     private static final String KEY_LIFT_TO_WAKE = "lift_to_wake";
@@ -80,6 +85,8 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
     private static final String KEY_AUTO_ROTATE = "auto_rotate";
 
     private static final int DLG_GLOBAL_CHANGE_WARNING = 1;
+
+    private static final String KEYBOARD_BACKLIGHTS_FILE = "/sys/class/leds/keyboard-backlight/brightness";
 
     private CheckBoxPreference mAccelerometer;
     private WarnedListPreference mFontSizePref;
@@ -99,6 +106,8 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
     private SwitchPreference mLiftToWakePreference;
     private SwitchPreference mDozePreference;
     private SwitchPreference mAutoBrightnessPreference;
+    private SwitchPreference mButtonLightsPreference;
+    private ListPreference mButtonLightsTimeoutPreference;
     private ListPreference	mMainModeList;
 	private ListPreference	mAuxDisplay;
     private ListPreference	mAuxModeList;
@@ -146,6 +155,20 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         mFontSizePref = (WarnedListPreference) findPreference(KEY_FONT_SIZE);
         mFontSizePref.setOnPreferenceChangeListener(this);
         mFontSizePref.setOnPreferenceClickListener(this);
+
+        if (isButtonLightsAvailable()) {
+            mButtonLightsPreference = (SwitchPreference) findPreference(KEY_BUTTON_LIGHTS_ENABLE);
+            mButtonLightsPreference.setOnPreferenceChangeListener(this);
+            mButtonLightsTimeoutPreference = (ListPreference) findPreference(KEY_BUTTON_LIGHTS_TIMEOUT);
+            mButtonLightsTimeoutPreference.setOnPreferenceChangeListener(this);
+            final int currentButtonLightsTimeout = Settings.System.getInt(resolver, Settings.System.BUTTON_LIGHTS_OFF_TIMEOUT,
+                FALLBACK_BUTTON_LIGHTS_TIMEOUT_VALUE);
+            mButtonLightsTimeoutPreference.setValue(String.valueOf(currentButtonLightsTimeout));
+            updateButtonLightsTimeoutPreferenceDescription(currentButtonLightsTimeout);
+        } else {
+            removePreference(KEY_BUTTON_LIGHTS_ENABLE);
+            removePreference(KEY_BUTTON_LIGHTS_TIMEOUT);
+        }
 
         if (isAutomaticBrightnessAvailable(getResources())) {
             mAutoBrightnessPreference = (SwitchPreference) findPreference(KEY_AUTO_BRIGHTNESS);
@@ -551,6 +574,38 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         return res.getBoolean(com.android.internal.R.bool.config_automatic_brightness_available);
     }
 
+    private static boolean isButtonLightsAvailable() {
+        File file = new File(KEYBOARD_BACKLIGHTS_FILE); 
+        if (file.exists())
+            return true;
+        return false;
+    }
+
+    private void updateButtonLightsTimeoutPreferenceDescription(int currentTimeout) {
+        ListPreference preference = mButtonLightsTimeoutPreference;
+        String summary;
+        if (currentTimeout < 0) {
+            summary = preference.getContext().getString(R.string.button_lights_timeout_never);
+        } else {
+            final CharSequence[] entries = preference.getEntries();
+            final CharSequence[] values = preference.getEntryValues();
+            if (entries == null || entries.length == 0) {
+                summary = "";
+            } else {
+                int best = 0;
+                for (int i = 0; i < values.length; i++) {
+                    long timeout = Long.parseLong(values[i].toString());
+                    if (currentTimeout >= timeout && timeout > 0) {
+                        best = i;
+                    }
+                }
+                summary = preference.getContext().getString(R.string.button_lights_timeout_summary,
+                        entries[best]);
+            }
+        }
+        preference.setSummary(summary);
+    }
+
     private void updateTimeoutPreferenceDescription(long currentTimeout) {
         ListPreference preference = mScreenTimeoutPreference;
         String summary;
@@ -716,6 +771,13 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         readFontSizePreference(mFontSizePref);
         updateScreenSaverSummary();
 
+        // Update button lights enable if it is available.
+        if (mButtonLightsPreference != null) {
+            int enable = Settings.System.getInt(getContentResolver(),
+                Settings.System.BUTTON_LIGHTS_ENABLED, 0);
+            mButtonLightsPreference.setChecked(enable != 0);
+        }
+
         // Update auto brightness if it is available.
         if (mAutoBrightnessPreference != null) {
             int brightnessMode = Settings.System.getInt(getContentResolver(),
@@ -771,6 +833,16 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         }
         if (KEY_FONT_SIZE.equals(key)) {
             writeFontSizePreference(objValue);
+        }
+        if (preference == mButtonLightsPreference) {
+            boolean enable = (Boolean) objValue;
+            Settings.System.putInt(getContentResolver(), Settings.System.BUTTON_LIGHTS_ENABLED,
+                    enable ? 1 : 0);
+        }
+        if (preference == mButtonLightsTimeoutPreference) {
+            int value = Integer.parseInt((String) objValue);
+            Settings.System.putInt(getContentResolver(), Settings.System.BUTTON_LIGHTS_OFF_TIMEOUT, value);
+            updateButtonLightsTimeoutPreferenceDescription(value);
         }
         if (preference == mAutoBrightnessPreference) {
             boolean auto = (Boolean) objValue;

@@ -536,4 +536,10 @@
     <item msgid="4608643045752965568">"粉红色"</item>
     <item msgid="6131821495505931173">"红色"</item>
   </string-array>
+  <string-array name="button_lights_timeout_entries">
+    <item>"1.5秒"</item>
+    <item>"3秒"</item>
+    <item>"5秒"</item>
+    <item>"永不超时"</item>
+  </string-array>
 </resources>
