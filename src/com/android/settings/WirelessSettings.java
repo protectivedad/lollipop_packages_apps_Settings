@@ -76,8 +76,9 @@ public class WirelessSettings extends SettingsPreferenceFragment
     private static final String KEY_SMS_APPLICATION = "sms_application";
     private static final String KEY_TOGGLE_NSD = "toggle_nsd"; //network service discovery
     private static final String KEY_CELL_BROADCAST_SETTINGS = "cell_broadcast_settings";
-
+    private static final String KEY_PPPOE_SETTINGS ="pppoe_settings";
     public static final String EXIT_ECM_RESULT = "exit_ecm_result";
+
     public static final int REQUEST_CODE_EXIT_ECM = 1;
 
     private AirplaneModeEnabler mAirplaneModeEnabler;
@@ -373,6 +374,12 @@ public class WirelessSettings extends SettingsPreferenceFragment
         getPreferenceScreen().removePreference(mGlobalProxy);
         mGlobalProxy.setEnabled(mDPM.getGlobalProxyAdmin() == null);
 
+        boolean isTablet = "box".equals(SystemProperties.get("ro.target.product", "tablet"));
+        if(!isTablet) {
+            Preference mPppoe = findPreference(KEY_PPPOE_SETTINGS);
+            getPreferenceScreen().removePreference(mPppoe);
+        }
+
         // Disable Tethering if it's not allowed or if it's a wifi-only device
         final ConnectivityManager cm =
                 (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -535,7 +542,6 @@ public class WirelessSettings extends SettingsPreferenceFragment
                 if (!isMobilePlanEnabled) {
                     result.add(KEY_MANAGE_MOBILE_PLAN);
                 }
-
                 // Remove SMS Application if the device does not support SMS
                 TelephonyManager tm =
                         (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

@@ -56,7 +56,8 @@
     <PreferenceScreen
         android:fragment="com.android.settings.pppoe.PppoeSettings"
         android:key="pppoe_settings"
-        android:title="@string/pppoe_settings_title" />
+        android:title="@string/pppoe_settings_title"
+	android:persistent="false" />
 <!--$_rbox_$_modify_$_end-->
  
     <PreferenceScreen
