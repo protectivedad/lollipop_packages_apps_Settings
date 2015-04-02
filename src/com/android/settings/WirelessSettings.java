@@ -77,6 +77,7 @@ public class WirelessSettings extends SettingsPreferenceFragment
     private static final String KEY_TOGGLE_NSD = "toggle_nsd"; //network service discovery
     private static final String KEY_CELL_BROADCAST_SETTINGS = "cell_broadcast_settings";
     private static final String KEY_PPPOE_SETTINGS ="pppoe_settings";
+    private static final String KEY_ETHERNET_SETTINGS="ethernet_settings";
     public static final String EXIT_ECM_RESULT = "exit_ecm_result";
 
     public static final int REQUEST_CODE_EXIT_ECM = 1;
@@ -379,7 +380,12 @@ public class WirelessSettings extends SettingsPreferenceFragment
             Preference mPppoe = findPreference(KEY_PPPOE_SETTINGS);
             getPreferenceScreen().removePreference(mPppoe);
         }
+        boolean isTB = "unknown".equals(SystemProperties.get("ro.target.product", "unknown"));
+        if(isTB) {
+            Preference mEthernet = findPreference(KEY_ETHERNET_SETTINGS);
+            getPreferenceScreen().removePreference(mEthernet);
 
+        }
         // Disable Tethering if it's not allowed or if it's a wifi-only device
         final ConnectivityManager cm =
                 (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
