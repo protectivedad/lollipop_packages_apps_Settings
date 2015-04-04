@@ -44,7 +44,6 @@ public class SimBootReceiver extends BroadcastReceiver {
     private static final int NOTIFICATION_ID = 1;
     private static final String SHARED_PREFERENCES_NAME = "sim_state";
     private static final String SLOT_PREFIX = "sim_slot_";
-    private static final int INVALID_SLOT = -2; // Used when upgrading from K to LMR1
 
     private SharedPreferences mSharedPreferences = null;
     private TelephonyManager mTelephonyManager;
@@ -92,9 +91,7 @@ public class SimBootReceiver extends BroadcastReceiver {
             if (sir != null) {
                 numSIMsDetected++;
                 final int currentSubId = sir.getSubscriptionId();
-                if (lastSubId == INVALID_SLOT) {
-                    setLastSubId(key, currentSubId);
-                } else if (lastSubId != currentSubId) {
+                if (lastSubId != currentSubId) {
                     createNotification(mContext);
                     setLastSubId(key, currentSubId);
                     notificationSent = true;
@@ -121,7 +118,7 @@ public class SimBootReceiver extends BroadcastReceiver {
     }
 
     private int getLastSubId(String strSlotId) {
-        return mSharedPreferences.getInt(strSlotId, INVALID_SLOT);
+        return mSharedPreferences.getInt(strSlotId, SLOT_EMPTY);
     }
 
     private void setLastSubId(String strSlotId, int value) {
