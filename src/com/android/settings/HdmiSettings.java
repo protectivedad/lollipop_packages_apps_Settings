@@ -98,12 +98,14 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		try {
 			mDisplayManagement = new DisplayOutputManager();
 		}catch (RemoteException doe) {
-			
+			mDisplayManagement = null;
 		}
-		if (mDisplayManagement.getDisplayNumber() == 2)
-			mDisplay = mDisplayManagement.AUX_DISPLAY;
-		else
-			mDisplay = mDisplayManagement.MAIN_DISPLAY;
+		if(mDisplayManagement != null) {
+			if (mDisplayManagement.getDisplayNumber() == 2)
+				mDisplay = mDisplayManagement.AUX_DISPLAY;
+			else
+				mDisplay = mDisplayManagement.MAIN_DISPLAY;
+		}
 		mHdmiLcd = (ListPreference) findPreference(KEY_HDMI_LCD);
 		HdmiDisplayModes = new File("sys/class/display/HDMI/modes");
 		mHdmiResolution = (ListPreference) findPreference(KEY_HDMI_RESOLUTION);
@@ -245,14 +247,17 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		// TODO Auto-generated method stub
 		String key = preference.getKey();
 		if (KEY_HDMI_RESOLUTION.equals(key)) {
-			mDisplayManagement.setMode(mDisplay,4,(String)objValue);
-			mDisplayManagement.saveConfig();
-			/*
-			try {
-				setHdmiMode((String)objValue);
-			} catch (NumberFormatException e) {
-				Log.e(TAG, "onPreferenceChanged hdmi_resolution setting error");
-			}*/
+			if(mDisplayManagement != null){
+				mDisplayManagement.setMode(mDisplay,4,(String)objValue);
+				mDisplayManagement.saveConfig();
+			}else{
+				try {
+					setHdmiMode((String)objValue);
+				} catch (NumberFormatException e) {
+					Log.e(TAG, "onPreferenceChanged hdmi_resolution setting error");
+				}
+			}
+
 		}
 
 		if (KEY_HDMI_LCD.equals(key)) {
@@ -312,28 +317,31 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		@Override
 		protected String doInBackground(String... params) {
 			// TODO Auto-generated method stub
-			/*try {
-				
-				RandomAccessFile rdf = null;
-				rdf = new RandomAccessFile(mHdmiEnableFlieName, "rw");
-				rdf.writeBytes(params[0]);
+			if(mDisplayManagement == null){
+				try {
+					
+					RandomAccessFile rdf = null;
+					rdf = new RandomAccessFile(mHdmiEnableFlieName, "rw");
+					rdf.writeBytes(params[0]);
+					editor.putString("enable", "1");
+					rdf.close();
+					editor.commit();
+				} catch (IOException re) {
+					Log.e(TAG, "IO Exception");
+					re.printStackTrace();
+				}
+			}else{
+				Log.d(TAG, "setHdmiConfig");
+				int enable = (Integer.parseInt(params[0]));
+				boolean test = false;
+				if(enable > 0)
+					test = true;
+				else if(enable <=0)
+					test = false;
+				mDisplayManagement.setInterface(mDisplay,4,test);
 				editor.putString("enable", "1");
-				rdf.close();
 				editor.commit();
-			} catch (IOException re) {
-				Log.e(TAG, "IO Exception");
-				re.printStackTrace();
-			}*/
-			Log.d(TAG, "setHdmiConfig");
-			int enable = (Integer.parseInt(params[0]));
-			boolean test = false;
-			if(enable > 0)
-				test = true;
-			else if(enable <=0)
-				test = false;
-			mDisplayManagement.setInterface(mDisplay,4,test);
-			editor.putString("enable", "1");
-			editor.commit();
+			}
 			return params[0];
 		}
 		
@@ -385,9 +393,14 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	    		mHdmiResolution.setEntries(result);
 				mHdmiResolution.setEntryValues(result);
 				mHdmiResolution.setEnabled(true);
+				String resolutionValue;
+				if(mDisplayManagement != null){
 				//String resolutionValue=sharedPreferences.getString("resolution", "1280x720p-60").trim()+"\n";
-				String resolutionValue=mDisplayManagement.getCurrentMode(mDisplay, 4);
-			    Log.d(TAG,"HdmiModeTask resolutionValue="+resolutionValue);
+					 resolutionValue=mDisplayManagement.getCurrentMode(mDisplay, 4);
+				}else{
+					 resolutionValue=sharedPreferences.getString("resolution", "1280x720p-60").trim()+"\n";
+				}
+			   // Log.d(TAG,"HdmiModeTask resolutionValue="+resolutionValue);
 			    mHdmiResolution.setValue(resolutionValue);
 	    	}
 	    }
