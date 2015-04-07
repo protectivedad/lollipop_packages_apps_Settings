@@ -42,6 +42,8 @@ import java.io.*;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.DisplayOutputManager;
+import android.graphics.Rect;
 
 public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 		SeekBar.OnSeekBarChangeListener, CheckBox.OnCheckedChangeListener {
@@ -62,6 +64,7 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 	private final File HdmiState = new File("sys/class/display/HDMI/connect");
 	private int dualMode;
 	private SharedPreferences preferences;
+	private DisplayOutputManager mDisplayManagement = null;
 
 	public HdmiScreenZoomPreference(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -71,21 +74,28 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 		preferences = context.getSharedPreferences(
 				"HdmiSettings", context.MODE_PRIVATE);
 		dualMode=preferences.getInt("dual_mode", 0);
+		try {
+			mDisplayManagement = new DisplayOutputManager();
+		}catch (RemoteException doe) {
+			
+		}
 	}
 
 	protected void setHdmiScreenScale(File file, int value) {
+		if (mDisplayManagement == null || value < 0)
+			return;
 		HdmiScaleTask hdmiScaleTask=new HdmiScaleTask();
-		hdmiScaleTask.execute(String.valueOf(value));
-		//if (!isHdmiConnected(HdmiState)) {
-		//	return;
-		//}
-		if (dualMode == 1) {
-			SystemProperties.set("sys.hdmi_screen.scale",
-					String.valueOf((char) value));
-		} else {
-			SystemProperties.set("sys.hdmi_screen.scale",
-					String.valueOf((char) 100));
-		}
+		hdmiScaleTask.execute(value);
+//		//if (!isHdmiConnected(HdmiState)) {
+//		//	return;
+//		//}
+//		if (dualMode == 1) {
+//			SystemProperties.set("sys.hdmi_screen.scale",
+//					String.valueOf((char) value));
+//		} else {
+//			SystemProperties.set("sys.hdmi_screen.scale",
+//					String.valueOf((char) 100));
+//		}
 	}
 
 	private boolean isHdmiConnected(File file) {
@@ -123,8 +133,14 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 		// resotre value
 		SharedPreferences preferences = context.getSharedPreferences(
 				"HdmiSettings", context.MODE_PRIVATE);
-		mOldScale = Integer.valueOf(preferences.getString("scale_set", "100"));
-		mOldScale = mOldScale - 80;
+
+		Rect overscan;
+		if (mDisplayManagement.getDisplayNumber() == 2)
+			overscan = mDisplayManagement.getOverScan(mDisplayManagement.AUX_DISPLAY);
+		else
+			overscan = mDisplayManagement.getOverScan(mDisplayManagement.MAIN_DISPLAY);
+		//mOldScale = Integer.valueOf(preferences.getString("scale_set", "100"));
+		mOldScale = overscan.left - 80;
 
 		mSeekBar.setProgress(mOldScale);
 		mSeekBar.setOnSeekBarChangeListener(this);
@@ -180,36 +196,46 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 		//editor.commit();
 	}
 	
-	private class HdmiScaleTask extends AsyncTask<String, Void, Void>{
+	private class HdmiScaleTask extends AsyncTask<Integer, Void, Void>{
 
 		@Override
-		protected Void doInBackground(String... params) {
+		protected Void doInBackground(Integer... params) {
 			// TODO Auto-generated method stub
-			try {
-				//StringBuffer strbuf = new StringBuffer("");
-				//strbuf.append(params[0]);
-				OutputStream output = null;
-				OutputStreamWriter outputWrite = null;
-				PrintWriter print = null;
-
-				try {
-					// SystemProperties.set("sys.hdmi_screen.scale",String.valueOf(value));
-					output = new FileOutputStream(HdmiScale);
-					outputWrite = new OutputStreamWriter(output);
-					print = new PrintWriter(outputWrite);
-                    Log.d(TAG,"scale value="+params[0]);
-					print.print(params[0]);
-					print.flush();
-					outputWrite.close();
-					print.close();
-					output.close();
-					preferences.edit().putString("scale_set", params[0]).commit();
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				}
-			} catch (IOException e) {
-				Log.e(TAG, "IO Exception");
-			}
+			int value = params[0];
+			if (mDisplayManagement.getDisplayNumber() == 2)
+				mDisplayManagement.setOverScan(mDisplayManagement.AUX_DISPLAY,
+							       mDisplayManagement.DISPLAY_OVERSCAN_ALL,
+							       value);
+			else
+				mDisplayManagement.setOverScan(mDisplayManagement.MAIN_DISPLAY,
+							       mDisplayManagement.DISPLAY_OVERSCAN_ALL,
+							       value);
+//			
+//			try {
+//				//StringBuffer strbuf = new StringBuffer("");
+//				//strbuf.append(params[0]);
+//				OutputStream output = null;
+//				OutputStreamWriter outputWrite = null;
+//				PrintWriter print = null;
+//
+//				try {
+//					// SystemProperties.set("sys.hdmi_screen.scale",String.valueOf(value));
+//					output = new FileOutputStream(HdmiScale);
+//					outputWrite = new OutputStreamWriter(output);
+//					print = new PrintWriter(outputWrite);
+//                    			Log.d(TAG,"scale value="+params[0]);
+//					print.print(params[0]);
+//					print.flush();
+//					outputWrite.close();
+//					print.close();
+//					output.close();
+//					preferences.edit().putString("scale_set", params[0]).commit();
+//				} catch (FileNotFoundException e) {
+//					e.printStackTrace();
+//				}
+//			} catch (IOException e) {
+//				Log.e(TAG, "IO Exception");
+//			}
 			return null;
 
 		}

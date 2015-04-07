@@ -82,6 +82,8 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	private static final String HDMI_CONNECTED="connect";
 	private static final String HDMI_DISCONNECTED="disconnect";
 
+	private int mDisplay;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -98,6 +100,10 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		}catch (RemoteException doe) {
 			
 		}
+		if (mDisplayManagement.getDisplayNumber() == 2)
+			mDisplay = mDisplayManagement.AUX_DISPLAY;
+		else
+			mDisplay = mDisplayManagement.MAIN_DISPLAY;
 		mHdmiLcd = (ListPreference) findPreference(KEY_HDMI_LCD);
 		HdmiDisplayModes = new File("sys/class/display/HDMI/modes");
 		mHdmiResolution = (ListPreference) findPreference(KEY_HDMI_RESOLUTION);
@@ -239,7 +245,8 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		// TODO Auto-generated method stub
 		String key = preference.getKey();
 		if (KEY_HDMI_RESOLUTION.equals(key)) {
-			mDisplayManagement.setMode(mDisplayManagement.MAIN_DISPLAY,4,(String)objValue);
+			mDisplayManagement.setMode(mDisplay,4,(String)objValue);
+			mDisplayManagement.saveConfig();
 			/*
 			try {
 				setHdmiMode((String)objValue);
@@ -275,7 +282,7 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	}
 
 	private String[] getModes() {
-		String[] modelist = mDisplayManagement.getModeList(mDisplayManagement.MAIN_DISPLAY,4);
+		String[] modelist = mDisplayManagement.getModeList(mDisplay,4);
 		return modelist;
 		/*
 		ArrayList<String> list = new ArrayList<String>();
@@ -324,7 +331,7 @@ public class HdmiSettings extends SettingsPreferenceFragment
 				test = true;
 			else if(enable <=0)
 				test = false;
-			mDisplayManagement.setInterface(mDisplayManagement.MAIN_DISPLAY,4,test);
+			mDisplayManagement.setInterface(mDisplay,4,test);
 			editor.putString("enable", "1");
 			editor.commit();
 			return params[0];
@@ -378,7 +385,8 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	    		mHdmiResolution.setEntries(result);
 				mHdmiResolution.setEntryValues(result);
 				mHdmiResolution.setEnabled(true);
-				String resolutionValue=sharedPreferences.getString("resolution", "1280x720p-60").trim()+"\n";
+				//String resolutionValue=sharedPreferences.getString("resolution", "1280x720p-60").trim()+"\n";
+				String resolutionValue=mDisplayManagement.getCurrentMode(mDisplay, 4);
 			    Log.d(TAG,"HdmiModeTask resolutionValue="+resolutionValue);
 			    mHdmiResolution.setValue(resolutionValue);
 	    	}
