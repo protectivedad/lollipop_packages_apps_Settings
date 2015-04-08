@@ -220,8 +220,9 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 								       value);
 			}else{			
 				try {
-					StringBuffer strbuf = new StringBuffer("");
-					strbuf.append(params[0]);
+					//StringBuffer strbuf = new StringBuffer("");
+					//strbuf.append(params[0]);
+					String s = String.valueOf(params[0]);
 					OutputStream output = null;
 					OutputStreamWriter outputWrite = null;
 					PrintWriter print = null;
@@ -237,7 +238,7 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 						outputWrite.close();
 						print.close();
 						output.close();
-						//preferences.edit().putString("scale_set", strbuf/*params[0]*/).commit();
+						preferences.edit().putString("scale_set", s).commit();
 					} catch (FileNotFoundException e) {
 						e.printStackTrace();
 					}
