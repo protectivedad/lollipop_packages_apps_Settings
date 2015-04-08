@@ -44,6 +44,9 @@ import com.android.settings.deviceinfo.StorageMeasurement.FileInfo;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import android.content.Intent;
+import android.os.Environment;
+import android.net.Uri;
 
 /**
  * This class handles the selection and removal of Misc files.
@@ -54,6 +57,11 @@ public class MiscFilesHandler extends ListActivity {
     private String mNumBytesSelectedFormat;
     private MemoryMearurementAdapter mAdapter;
     private LayoutInflater mInflater;
+
+	public static String flash_dir = Environment.getExternalStorageDirectory().getPath();
+	public static String sdcard_dir = "/mnt/external_sd";// Environment.getExternalStorageDirectory().getPath();//"/mnt/external_sd";
+	public static String usb_dir = "/mnt/usb_storage";// Environment.getHostStorageDirectory().getPath();//"/mnt/usb_storage";
+	public static String internal_dir = "/mnt/internal_sd";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -157,6 +165,8 @@ public class MiscFilesHandler extends ListActivity {
             return dir.delete();
         }
 
+
+
         public void onDestroyActionMode(ActionMode mode) {
             // This block intentionally left blank
         }
@@ -231,10 +241,33 @@ public class MiscFilesHandler extends ListActivity {
             }
             for (Object o : objs) {
                 mData.remove(o);
+				reMedioScan(((StorageMeasurement.FileInfo) o).mFileName);
                 mDataSize -= ((StorageMeasurement.FileInfo) o).mSize;
             }
         }
 
+		//mediascanning
+		public void reMedioScan(String rescanFilePath) {
+			String scan_path = new String();
+			if (rescanFilePath.contains(flash_dir)) {						
+				scan_path = flash_dir;
+				Log.d("ljh","*************scan_path="+scan_path);
+			} else if (rescanFilePath.contains(sdcard_dir)) {
+				scan_path = sdcard_dir;
+			} else if (rescanFilePath.contains(usb_dir)) {
+				scan_path = usb_dir;
+			}else if (rescanFilePath.contains(internal_dir)) {
+				scan_path = internal_dir;
+			} else {
+				return;
+			}
+
+			Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, 
+					Uri.parse("file://" + scan_path)); 
+			intent.putExtra("package", "RockExplorer");
+			sendBroadcast(intent);
+		}
+		
         public long getDataSize() {
             return mDataSize;
         }
