@@ -46,6 +46,11 @@ import com.android.settings.R;
 import com.android.settings.SettingsActivity;
 
 import java.util.List;
+import android.os.BatteryManager;
+import android.os.UserHandle;
+import android.preference.CheckBoxPreference;
+import android.provider.Settings;
+import android.util.Log;
 
 /**
  * Displays a list of apps and subsystems that consume power, ordered by how much power was
@@ -66,12 +71,15 @@ public class PowerUsageSummary extends PreferenceFragment {
     private static final int MENU_BATTERY_SAVER = Menu.FIRST + 2;
     private static final int MENU_HELP = Menu.FIRST + 3;
 
+	private static final String KEY_BATTERY_PERCENTAGE = "battery_percentage";
+
     private UserManager mUm;
 
     private BatteryHistoryPreference mHistPref;
     private PreferenceGroup mAppListGroup;
     private String mBatteryLevel;
     private String mBatteryStatus;
+	private CheckBoxPreference mBatteryPercentagePref;
 
     private int mStatsType = BatteryStats.STATS_SINCE_CHARGED;
 
@@ -110,6 +118,7 @@ public class PowerUsageSummary extends PreferenceFragment {
 
         addPreferencesFromResource(R.xml.power_usage_summary);
         mAppListGroup = (PreferenceGroup) findPreference(KEY_APP_LIST);
+		mBatteryPercentagePref = (CheckBoxPreference) mAppListGroup.findPreference(KEY_BATTERY_PERCENTAGE);
         setHasOptionsMenu(true);
     }
 
@@ -167,7 +176,14 @@ public class PowerUsageSummary extends PreferenceFragment {
             sa.startPreferencePanel(BatteryHistoryDetail.class.getName(), args,
                     R.string.history_details_title, null, null, 0);
             return super.onPreferenceTreeClick(preferenceScreen, preference);
-        }
+        } else if (mBatteryPercentagePref == preference) {
+            int state = mBatteryPercentagePref.isChecked() ? 1 : 0;
+            Settings.Secure.putInt(getActivity().getContentResolver(), Settings.Secure.BATTERY_PERCENTAGE, state);
+            Intent intent = new Intent(BatteryManager.ACTION_SHOW_BATTERY_PERCENTAGE);
+            intent.putExtra("state", state);
+            getActivity().sendBroadcastAsUser(intent, UserHandle.ALL);
+            return super.onPreferenceTreeClick(preferenceScreen, preference);
+         }
         if (!(preference instanceof PowerGaugePreference)) {
             return false;
         }
@@ -251,6 +267,13 @@ public class PowerUsageSummary extends PreferenceFragment {
     private void refreshStats() {
         mAppListGroup.removeAll();
         mAppListGroup.setOrderingAsAdded(false);
+
+		final boolean enable = Settings.Secure.getInt(getActivity().getContentResolver(),
+                Settings.Secure.BATTERY_PERCENTAGE, 0) != 0;
+        mBatteryPercentagePref.setChecked(enable);
+        mBatteryPercentagePref.setOrder(-3);
+        mAppListGroup.addPreference(mBatteryPercentagePref);
+
         mHistPref = new BatteryHistoryPreference(getActivity(), mStatsHelper.getStats(),
                 mStatsHelper.getBatteryBroadcast());
         mHistPref.setOrder(-1);

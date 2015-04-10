@@ -19,4 +19,7 @@
         android:title="@string/power_usage_summary_title"
         settings:keywords="@string/keywords_battery"
         android:key="app_list">
+		<CheckBoxPreference
+		    android:key="battery_percentage"
+	        android:title="@string/battery_percentage_title"/>
 </PreferenceScreen>

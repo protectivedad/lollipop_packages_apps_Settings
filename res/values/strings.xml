@@ -6238,4 +6238,6 @@
     <string name="button_lights_timeout_title">Front touch button backlights timeout</string>
     <string name="button_lights_timeout_summary">After <xliff:g id="timeout">%s</xliff:g> off</string>
     <string name="button_lights_timeout_never">Never</string>
+
+	<string name="battery_percentage_title">Battery Percentage</string>
 </resources>
