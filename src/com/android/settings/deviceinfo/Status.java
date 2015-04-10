@@ -45,6 +45,9 @@ import android.widget.Toast;
 import com.android.internal.util.ArrayUtils;
 import com.android.settings.R;
 import com.android.settings.Utils;
+import android.util.Log;
+import android.preference.PreferenceScreen;
+import android.preference.Preference;
 
 import java.lang.ref.WeakReference;
 
@@ -219,14 +222,21 @@ public class Status extends PreferenceActivity {
                         int position, long id) {
                     ListAdapter listAdapter = (ListAdapter) parent.getAdapter();
                     Preference pref = (Preference) listAdapter.getItem(position);
-
+					if (pref.getKey().equals(KEY_SERIAL_NUMBER)) {
+						Log.d("ljh","+++++++++++++++++++++++");
+						SystemProperties.set("persist.tool_enable", "1");					
                     ClipboardManager cm = (ClipboardManager)
                             getSystemService(Context.CLIPBOARD_SERVICE);
                     cm.setText(pref.getSummary());
+					Toast.makeText(
+                        Status.this,"tool enable",
+                        Toast.LENGTH_SHORT).show();
+					}else{
                     Toast.makeText(
                         Status.this,
                         com.android.internal.R.string.text_copied,
                         Toast.LENGTH_SHORT).show();
+					}
                     return true;
                 }
             });
