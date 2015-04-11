@@ -340,7 +340,7 @@ public class StorageVolumePreferenceCategory extends PreferenceCategory {
                 mFormatPreference.setSummary(mResources.getString(R.string.mtp_ptp_mode_summary));
             }
         } else if (mFormatPreference != null) {
-            //mFormatPreference.setEnabled(mMountTogglePreference.isEnabled());
+            mFormatPreference.setEnabled(mMountTogglePreference.isEnabled());
             //mFormatPreference.setSummary(mResources.getString(R.string.sd_format_summary));
            if (mVolume.getPath().indexOf("internal_sd" ) > -1) {
                  mFormatPreference.setSummary(mResources.getString(R.string.nand_flash_format_summary));
