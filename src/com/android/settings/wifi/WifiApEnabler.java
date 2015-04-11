@@ -38,6 +38,7 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
+import android.os.Handler;
 
 public class WifiApEnabler {
     private final Context mContext;
@@ -70,6 +71,17 @@ public class WifiApEnabler {
             }
         }
     };
+
+     //$_rbox_$_modify_by_huangjc
+     Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                        // TODO Auto-generated method stub
+                        handleWifiApStateChanged(1000);// 发生了错误
+                }
+        };
+     //$_rbox_$_end
 
     public WifiApEnabler(Context context, SwitchPreference switchPreference) {
         mContext = context;
@@ -125,6 +137,9 @@ public class WifiApEnabler {
             if (mSwitch != null) {
                 /* Disable here, enabled on receiving success broadcast */
                 mSwitch.setEnabled(false);
+                //$_rbox_$_modify_by_huangjc
+                handler.postDelayed(runnable, 15000);// 打开定时器,10秒收不到广播，发出失败信息
+                //$_rbox_$_end
             }
         } else {
             if (mSwitch != null) {
@@ -183,6 +198,9 @@ public class WifiApEnabler {
     }
 
     private void handleWifiApStateChanged(int state) {
+        //$_rbox_$_modify_by_huangjc
+        handler.removeCallbacks(runnable);// 关闭定时器
+        //$_rbox_$_end
         switch (state) {
             case WifiManager.WIFI_AP_STATE_ENABLING:
                 mSwitch.setSummary(R.string.wifi_tether_starting);
