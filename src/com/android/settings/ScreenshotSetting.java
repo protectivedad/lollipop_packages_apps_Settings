@@ -28,7 +28,7 @@ import android.widget.TextView;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.os.SystemProperties;
-
+import android.content.res.Resources;
 public class ScreenshotSetting extends SettingsPreferenceFragment implements OnPreferenceChangeListener{
 	 /** Called when the activity is first created. */
 	private static final String KEY_SCREENSHOT_DELAY="screenshot_delay";
@@ -71,6 +71,11 @@ public class ScreenshotSetting extends SettingsPreferenceFragment implements OnP
     	String summary_storage=mStorage.getSharedPreferences().getString("screenshot_storage", "flash");
         mStorage.setValue(summary_storage);
     	mStorage.setSummary(summary_storage);
+        Resources res = mContext.getResources();
+        boolean mHasNavigationBar = res.getBoolean(com.android.internal.R.bool.config_showNavigationBar);
+        if(!mHasNavigationBar){
+           getPreferenceScreen().removePreference(mShow);
+        }
         getPreferenceScreen().removePreference(mVersion);
         
         mScreenshot=(Screenshot)getActivity().getApplication();
