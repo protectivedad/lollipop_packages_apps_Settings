@@ -22,6 +22,7 @@ import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.telecom.PhoneAccount;
@@ -55,6 +56,7 @@ public class SimDialogActivity extends Activity {
 
     public static String PREFERRED_SIM = "preferred_sim";
     public static String DIALOG_TYPE_KEY = "dialog_type";
+    public static String ITEM_ASK_SUPPORTED = "item_ask_supported";
     public static final int INVALID_PICK = -1;
     public static final int DATA_PICK = 0;
     public static final int CALLS_PICK = 1;
@@ -184,8 +186,12 @@ public class SimDialogActivity extends Activity {
                                         value < 1 ? null : phoneAccountsList.get(value - 1));
                                 break;
                             case SMS_PICK:
-                                sir = subInfoList.get(value);
-                                setDefaultSmsSubId(context, sir.getSubscriptionId());
+                                if (value < 1) {
+                                    setDefaultSmsSubId(context, SubscriptionManager.INVALID_SUBSCRIPTION_ID);
+                                } else {
+                                    sir = subInfoList.get(value - 1);
+                                    setDefaultSmsSubId(context, sir.getSubscriptionId());
+                                }
                                 break;
                             default:
                                 throw new IllegalArgumentException("Invalid dialog type "
@@ -208,6 +214,7 @@ public class SimDialogActivity extends Activity {
             };
 
         ArrayList<SubscriptionInfo> callsSubInfoList = new ArrayList<SubscriptionInfo>();
+        ArrayList<SubscriptionInfo> smsSubInfoList = new ArrayList<SubscriptionInfo>();
         if (id == CALLS_PICK) {
             final TelecomManager telecomManager = TelecomManager.from(context);
             final Iterator<PhoneAccountHandle> phoneAccounts =
@@ -232,6 +239,16 @@ public class SimDialogActivity extends Activity {
                 }
             }
         } else {
+            if (id == SMS_PICK) {
+                Intent intent = getIntent();
+                final Bundle extras = intent != null ? intent.getExtras() : null;
+                final boolean needItemAsk = extras.getBoolean(ITEM_ASK_SUPPORTED, false);
+
+                if (needItemAsk) {
+                    list.add(getResources().getString(R.string.sim_calls_ask_first_prefs_title));
+                    smsSubInfoList.add(null);
+                }
+            }
             for (int i = 0; i < selectableSubInfoLength; ++i) {
                 final SubscriptionInfo sir = subInfoList.get(i);
                 CharSequence displayName = sir.getDisplayName();
@@ -239,6 +256,7 @@ public class SimDialogActivity extends Activity {
                     displayName = "";
                 }
                 list.add(displayName.toString());
+                smsSubInfoList.add(sir);
             }
         }
 
@@ -247,7 +265,7 @@ public class SimDialogActivity extends Activity {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
         ListAdapter adapter = new SelectAccountListAdapter(
-                id == CALLS_PICK ? callsSubInfoList : subInfoList,
+                id == CALLS_PICK ? callsSubInfoList : (id == SMS_PICK ? smsSubInfoList : subInfoList),
                 builder.getContext(),
                 R.layout.select_account_list_item,
                 arr, id);

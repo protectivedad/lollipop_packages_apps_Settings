@@ -205,7 +205,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         if (sir != null) {
             simPref.setSummary(sir.getDisplayName());
         } else if (sir == null) {
-            simPref.setSummary(R.string.sim_selection_required_pref);
+            simPref.setSummary(R.string.sim_calls_ask_first_prefs_title);
         }
         simPref.setEnabled(mSelectableSubInfos.size() >= 1);
     }
@@ -266,6 +266,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             context.startActivity(intent);
         } else if (findPreference(KEY_SMS) == preference) {
             intent.putExtra(SimDialogActivity.DIALOG_TYPE_KEY, SimDialogActivity.SMS_PICK);
+            intent.putExtra(SimDialogActivity.ITEM_ASK_SUPPORTED, true);
             context.startActivity(intent);
         }
 
