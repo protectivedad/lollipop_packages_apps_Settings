@@ -2743,19 +2743,24 @@ public class DataUsageSummary extends HighlightingFragment implements Indexable 
         //SUB SELECT
         private boolean isMobileDataAvailable(long subId) {
             int[] subIds = SubscriptionManager.getSubId(PhoneConstants.SUB1);
+            boolean invalidSubId = false;
             if (subIds != null && subIds[0] == subId) {
-                return true;
+                invalidSubId = true;
             }
 
             subIds = SubscriptionManager.getSubId(PhoneConstants.SUB2);
             if (subIds != null && subIds[0] == subId) {
-                return true;
+                invalidSubId = true;
             }
 
             subIds = SubscriptionManager.getSubId(PhoneConstants.SUB3);
             if (subIds != null && subIds[0] == subId) {
-                return true;
+                invalidSubId = true;
             }
-            return false;
+            if (invalidSubId) {
+                return SubscriptionManager.getDefaultDataSubId() == subId;
+            } else {
+                return false;
+            }
         }
 }
