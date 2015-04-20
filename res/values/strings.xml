@@ -6240,4 +6240,8 @@
     <string name="button_lights_timeout_never">Never</string>
 
 	<string name="battery_percentage_title">Battery Percentage</string>
+
+	<string name="cellular_data_switch_title">Data Switch</string>
+    <string name="cellular_data_switch_open">Data is on</string>
+    <string name="cellular_data_switch_close">Data is off</string>
 </resources>

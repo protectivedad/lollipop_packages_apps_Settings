@@ -54,6 +54,11 @@ import com.android.settings.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.preference.SwitchPreference;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
 
 public class SimSettings extends RestrictedSettingsFragment implements Indexable {
     private static final String TAG = "SimSettings";
@@ -90,6 +95,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private static final int DATA_PICK = 0;
     private static final int CALLS_PICK = 1;
     private static final int SMS_PICK = 2;
+	private static final String KEY_DATA_SWITCH = "sim_data_switch";
 
     /**
      * By UX design we use only one Subscription Information(SubInfo) record per SIM slot.
@@ -131,7 +137,37 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         updateAllOptions();
 
         SimBootReceiver.cancelNotification(getActivity());
+
+		IntentFilter dataStateFilter = new IntentFilter();
+        dataStateFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        getActivity().registerReceiver(dataStateChangeReceiver, dataStateFilter);
     }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        getActivity().unregisterReceiver(dataStateChangeReceiver);
+    }
+
+	private BroadcastReceiver dataStateChangeReceiver = new BroadcastReceiver(){@Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals(ConnectivityManager.CONNECTIVITY_ACTION)){
+                final Preference simPref = findPreference(KEY_DATA_SWITCH);
+                ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(  
+                        Context.CONNECTIVITY_SERVICE);
+                if(connectivityManager.getMobileDataEnabled()){                
+                    ((SwitchPreference) simPref).setChecked(true);
+                    simPref.setSummary(R.string.cellular_data_switch_open);
+                }
+                else{
+                    ((SwitchPreference) simPref).setChecked(false);
+                    simPref.setSummary(R.string.cellular_data_switch_close);
+                }
+                simPref.setEnabled(mSelectableSubInfos.size() >= 1);
+            }
+        }
+    };
 
     private void createPreferences() {
         final TelephonyManager tm =
@@ -191,6 +227,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
 
     private void updateActivitesCategory() {
         updateCellularDataValues();
+		updateDataSwitchValues();
         updateCallValues();
         updateSmsValues();
     }
@@ -207,6 +244,60 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         } else if (sir == null) {
             simPref.setSummary(R.string.sim_calls_ask_first_prefs_title);
         }
+        simPref.setEnabled(mSelectableSubInfos.size() >= 1);
+    }
+
+	private void updateDataSwitchState(){
+        final Preference simPref = findPreference(KEY_DATA_SWITCH);
+        final TelephonyManager tm =
+            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(  
+                Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE); 
+        //if(networkInfo.isAvailable()){
+        if(connectivityManager.getMobileDataEnabled()){
+            ((SwitchPreference) simPref).setChecked(true);
+            simPref.setSummary(R.string.cellular_data_switch_open);
+        }
+        else{
+            ((SwitchPreference) simPref).setChecked(false);
+            simPref.setSummary(R.string.cellular_data_switch_close);
+        }
+        simPref.setEnabled(mSelectableSubInfos.size() >= 1);
+
+    }
+
+    private void updateDataSwitchValues(){
+        final Preference simPref = findPreference(KEY_DATA_SWITCH);
+        final TelephonyManager tm =
+            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+        simPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener(){
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue){
+                boolean dataEnabled = (boolean) newValue;
+                if(dataEnabled){
+                    simPref.setSummary(R.string.cellular_data_switch_open);
+                }
+                else{
+                    simPref.setSummary(R.string.cellular_data_switch_close);
+                }
+                tm.setDataEnabled(dataEnabled);
+                return true;
+            }
+        });
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(  
+                Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE); 
+        //if(networkInfo.isAvailable()){
+        if(connectivityManager.getMobileDataEnabled()){
+            ((SwitchPreference) simPref).setChecked(true);
+            simPref.setSummary(R.string.cellular_data_switch_open);
+        }
+        else{
+            ((SwitchPreference) simPref).setChecked(false);
+            simPref.setSummary(R.string.cellular_data_switch_close);
+        }
+        if (DBG) log("[updateDataSwitchValues] mSubInfoList=" + mSubInfoList);
         simPref.setEnabled(mSelectableSubInfos.size() >= 1);
     }
 
@@ -247,6 +338,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
 
         updateAvailableSubInfos();
         updateAllOptions();
+		updateDataSwitchState();
     }
 
     @Override
