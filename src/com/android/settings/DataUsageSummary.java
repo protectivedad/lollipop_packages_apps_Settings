@@ -2741,7 +2741,7 @@ public class DataUsageSummary extends HighlightingFragment implements Indexable 
         }
 
         //SUB SELECT
-        private boolean isMobileDataAvailable(long subId) {
+        private boolean isMobileDataAvailable(int subId) {
             int[] subIds = SubscriptionManager.getSubId(PhoneConstants.SUB1);
             boolean invalidSubId = false;
             if (subIds != null && subIds[0] == subId) {
