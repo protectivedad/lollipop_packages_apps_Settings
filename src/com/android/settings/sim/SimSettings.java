@@ -17,15 +17,19 @@
 package com.android.settings.sim;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 import android.provider.SearchIndexableResource;
@@ -51,6 +55,8 @@ import com.android.settings.Utils;
 import com.android.settings.search.BaseSearchIndexProvider;
 import com.android.settings.search.Indexable;
 import com.android.settings.R;
+
+import com.android.internal.telephony.TelephonyIntents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -180,6 +186,27 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         final int numSlots = tm.getSimCount();
         mAvailableSubInfos = new ArrayList<SubscriptionInfo>(numSlots);
         mSelectableSubInfos = new ArrayList<SubscriptionInfo>();
+        updatePreferences();
+        updateActivitesCategory();
+    }
+
+    private void updatePreferences() {
+        clearSimPreference();
+
+        final TelephonyManager tm =
+            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+
+        final int numSlots = tm.getSimCount();
+        if (mAvailableSubInfos != null) {
+            mAvailableSubInfos.clear();
+            mAvailableSubInfos = null;
+        }
+        mAvailableSubInfos = new ArrayList<SubscriptionInfo>(numSlots);
+
+        if (mSelectableSubInfos != null) {
+           mSelectableSubInfos.clear();
+        }
+
         for (int i = 0; i < numSlots; ++i) {
             final SubscriptionInfo sir = Utils.findRecordBySlotId(getActivity(), i);
             SimPreference simPreference = new SimPreference(getActivity(), sir, i);
@@ -190,8 +217,6 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
                 mSelectableSubInfos.add(sir);
             }
         }
-
-        updateActivitesCategory();
     }
 
     private void updateAvailableSubInfos(){
@@ -337,8 +362,25 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         if (DBG) log("[onResme] mSubInfoList=" + mSubInfoList);
 
         updateAvailableSubInfos();
+
+        if (getActivity() != null) {
+            final IntentFilter filter = new IntentFilter(TelephonyIntents.ACTION_SIM_STATE_CHANGED);
+            filter.addAction(TelephonyIntents.ACTION_SUBINFO_RECORD_UPDATED);
+            filter.addAction(TelephonyIntents.ACTION_SUBINFO_CONTENT_CHANGE);
+            getActivity().registerReceiver(mReceiver, filter);
+        }
+
         updateAllOptions();
 		updateDataSwitchState();
+    }
+
+     @Override
+    public void onPause() {
+        super.onPause();
+
+        if (getActivity() != null) {
+            getActivity().unregisterReceiver(mReceiver);
+        }
     }
 
     @Override
@@ -607,4 +649,46 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
                     return result;
                 }
             };
+
+    private void clearSimPreference() {
+        int prefSize = mSimCards.getPreferenceCount();
+        for (int i = 0; i < prefSize;) {
+            Preference pref = mSimCards.getPreference(i);
+            if (pref instanceof SimPreference) {
+                mSimCards.removePreference(pref);
+                prefSize--;
+            } else {
+                i++;
+            }
+        }
+    }
+
+    private static final int MESSAGE_UPDATE_VIEW = 102;
+
+    Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MESSAGE_UPDATE_VIEW:
+                    if (getActivity() == null) return;
+                    mSubInfoList = mSubscriptionManager.getActiveSubscriptionInfoList();
+                    updatePreferences();
+                    updateAllOptions();
+                    break;
+                default:break;
+            }
+        }
+    };
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+                if (TelephonyIntents.ACTION_SIM_STATE_CHANGED.equals(action)
+                    || TelephonyIntents.ACTION_SUBINFO_RECORD_UPDATED.equals(action)
+                    || TelephonyIntents.ACTION_SUBINFO_CONTENT_CHANGE.equals(action)) {
+                mHandler.removeMessages(MESSAGE_UPDATE_VIEW);
+                mHandler.sendEmptyMessage(MESSAGE_UPDATE_VIEW);
+            }
+        }
+    };
 }
