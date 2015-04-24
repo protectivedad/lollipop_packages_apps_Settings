@@ -353,8 +353,8 @@ public class SimStatus extends PreferenceActivity {
         setSummaryText(KEY_PHONE_NUMBER, formattedNumber);
         final String imei = mPhone.getPhoneType() == TelephonyManager.PHONE_TYPE_CDMA
                 ? mPhone.getImei() : mPhone.getDeviceId();
-        setSummaryText(KEY_IMEI, imei);
-        setSummaryText(KEY_IMEI_SV, mTelephonyManager.getDeviceSoftwareVersion(/*slotId*/));
+        //setSummaryText(KEY_IMEI, imei);
+        //setSummaryText(KEY_IMEI_SV, mTelephonyManager.getDeviceSoftwareVersion(/*slotId*/));
 
         if (!mShowLatestAreaInfo) {
             removePreferenceFromScreen(KEY_LATEST_AREA_INFO);
