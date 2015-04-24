@@ -60,6 +60,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import android.text.TextWatcher;
+import android.text.Editable;
+import android.widget.Button;
+
 /**
  * BluetoothSettings is the Settings screen for Bluetooth configuration and
  * connection management.
@@ -462,9 +466,27 @@ public final class BluetoothSettings extends DeviceListPreferenceFragment implem
                 }
             });
 
-            AlertDialog dialog = settingsDialog.create();
+            final AlertDialog dialog = settingsDialog.create();
             dialog.create();
             dialog.show();
+
+			dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+
+            deviceName.addTextChangedListener(new TextWatcher(){
+                Button mOkButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                public void afterTextChanged(Editable s) {
+                    if (mOkButton != null) {
+                        mOkButton.setEnabled(true);
+                        mOkButton.setEnabled(s.length() != 0);
+                    }
+                }
+                /* Not used */
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+                /* Not used */
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+            });
 
             // We must ensure that clicking on the EditText will bring up the keyboard.
             dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
