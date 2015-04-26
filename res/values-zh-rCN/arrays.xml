@@ -535,6 +535,8 @@
     <item msgid="3170497246594232819">"紫色"</item>
     <item msgid="4608643045752965568">"粉红色"</item>
     <item msgid="6131821495505931173">"红色"</item>
+	<item msgid="6131821495505931173">"橙色"</item>
+	<item msgid="6131821495505931173">"浅灰色"</item>
   </string-array>
   <string-array name="button_lights_timeout_entries">
     <item>"1.5秒"</item>

@@ -1262,6 +1262,8 @@
         <item>Purple</item>
         <item>Pink</item>
         <item>Red</item>
+		<item>Orange</item>
+		<item>Grey</item>
     </string-array>
     <!-- HDMI -->
     <string-array name="hdmi_resolution_entries">
