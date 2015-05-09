@@ -122,10 +122,15 @@ public class SimDialogActivity extends Activity {
         }
     }
 
-    private static void setDefaultDataSubId(final Context context, final int subId) {
+    private static boolean setDefaultDataSubId(final Context context, final int subId) {
         final SubscriptionManager subscriptionManager = SubscriptionManager.from(context);
-        subscriptionManager.setDefaultDataSubId(subId);
-        Toast.makeText(context, R.string.data_switch_started, Toast.LENGTH_LONG).show();
+        final int dds = subscriptionManager.getDefaultDataSubId();
+        if (subId != dds) {
+            subscriptionManager.setDefaultDataSubId(subId);
+            Toast.makeText(context, R.string.data_switch_started, Toast.LENGTH_LONG).show();
+            return true;
+        }
+        return false;
     }
 
     private static void setDefaultSmsSubId(final Context context, final int subId) {
@@ -171,11 +176,11 @@ public class SimDialogActivity extends Activity {
                     public void onClick(DialogInterface dialog, int value) {
 
                         final SubscriptionInfo sir;
-
+                        boolean result = false;
                         switch (id) {
                             case DATA_PICK:
                                 sir = subInfoList.get(value);
-                                setDefaultDataSubId(context, sir.getSubscriptionId());
+                                result = setDefaultDataSubId(context, sir.getSubscriptionId());
                                 break;
                             case CALLS_PICK:
                                 final TelecomManager telecomManager =
@@ -197,7 +202,7 @@ public class SimDialogActivity extends Activity {
                                 throw new IllegalArgumentException("Invalid dialog type "
                                         + id + " in SIM dialog.");
                         }
-
+                        setResult(result ? RESULT_OK : RESULT_CANCELED);
                         finish();
                     }
                 };

@@ -16,7 +16,10 @@
 
 package com.android.settings.sim;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -33,6 +36,8 @@ import android.os.Message;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 import android.provider.SearchIndexableResource;
+import android.telephony.PhoneStateListener;
+import android.telephony.ServiceState;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
@@ -68,7 +73,7 @@ import android.content.BroadcastReceiver;
 
 public class SimSettings extends RestrictedSettingsFragment implements Indexable {
     private static final String TAG = "SimSettings";
-    private static final boolean DBG = false;
+    private static final boolean DBG = true;
 
     private static final String DISALLOW_CONFIG_SIM = "no_config_sim";
     private static final String SIM_CARD_CATEGORY = "sim_cards";
@@ -103,6 +108,11 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private static final int CALLS_PICK = 1;
     private static final int SMS_PICK = 2;
 
+    private static final int REQUEST_SET_DEFAULT_DATA = 10;
+    private static final int DIALOG_SWITCHING_DEFAULT_DATA_SUB = 1001;
+
+    private PhoneStateListener mPhoneStateListener;
+
     /**
      * By UX design we use only one Subscription Information(SubInfo) record per SIM slot.
      * mAvalableSubInfos is the list of SubInfos we present to the user.
@@ -120,8 +130,10 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private PreferenceScreen mSimCards = null;
 
     private SubscriptionManager mSubscriptionManager;
+    private TelephonyManager mTelephonyManager;
     private Utils mUtils;
 
+    private boolean mShowWaitingDialogNeeded;
 
     public SimSettings() {
         super(DISALLOW_CONFIG_SIM);
@@ -133,6 +145,8 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
 
         mSubscriptionManager = SubscriptionManager.from(getActivity());
 
+        mTelephonyManager =
+            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         if (mSubInfoList == null) {
             mSubInfoList = mSubscriptionManager.getActiveSubscriptionInfoList();
             // FIXME: b/18385348, needs to handle null from getActiveSubscriptionInfoList
@@ -140,20 +154,16 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         if (DBG) log("[onCreate] mSubInfoList=" + mSubInfoList);
 
         createPreferences();
-        updateAllOptions();
 
         SimBootReceiver.cancelNotification(getActivity());
     }
 
     private void createPreferences() {
-        final TelephonyManager tm =
-            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-
         addPreferencesFromResource(R.xml.sim_settings);
 
         mSimCards = (PreferenceScreen)findPreference(SIM_CARD_CATEGORY);
 
-        final int numSlots = tm.getSimCount();
+        final int numSlots = mTelephonyManager.getSimCount();
         mAvailableSubInfos = new ArrayList<SubscriptionInfo>(numSlots);
         mSelectableSubInfos = new ArrayList<SubscriptionInfo>();
         updatePreferences();
@@ -163,10 +173,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private void updatePreferences() {
         clearSimPreference();
 
-        final TelephonyManager tm =
-            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-
-        final int numSlots = tm.getSimCount();
+        final int numSlots = mTelephonyManager.getSimCount();
         if (mAvailableSubInfos != null) {
             mAvailableSubInfos.clear();
             mAvailableSubInfos = null;
@@ -190,9 +197,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     }
 
     private void updateAvailableSubInfos(){
-        final TelephonyManager tm =
-            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-        final int numSlots = tm.getSimCount();
+        final int numSlots = mTelephonyManager.getSimCount();
 
         mAvailableSubInfos = new ArrayList<SubscriptionInfo>(numSlots);
         for (int i = 0; i < numSlots; ++i) {
@@ -242,44 +247,9 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         simPref.setEnabled(mSelectableSubInfos.size() >= 1);
     }
 
-    private void updateDataSwitchState(){
-        final Preference simPref = findPreference(KEY_DATA_SWITCH);
-        final TelephonyManager tm =
-            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(  
-                Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE); 
-        //if(networkInfo.isAvailable()){
-        if(connectivityManager.getMobileDataEnabled()){
-            ((SwitchPreference) simPref).setChecked(true);
-            simPref.setSummary(R.string.cellular_data_switch_open);
-        }
-        else{
-            ((SwitchPreference) simPref).setChecked(false);
-            simPref.setSummary(R.string.cellular_data_switch_close);
-        }
-        simPref.setEnabled(mSelectableSubInfos.size() >= 1);
-
-    }
-
     private void updateDataSwitchValues(){
         final Preference simPref = findPreference(KEY_DATA_SWITCH);
-        final TelephonyManager tm =
-            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-        /*simPref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener(){
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue){
-                boolean dataEnabled = (boolean) newValue;
-                if(dataEnabled){
-                    simPref.setSummary(R.string.cellular_data_switch_open);
-                } else {
-                    simPref.setSummary(R.string.cellular_data_switch_close);
-                }
-                tm.setDataEnabled(dataEnabled);
-                return true;
-            }
-        });*/
-        if(tm.getDataEnabled()){
+        if(mTelephonyManager.getDataEnabled()){
             ((SwitchPreference) simPref).setChecked(true);
             simPref.setSummary(R.string.cellular_data_switch_open);
         } else {
@@ -288,7 +258,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         }
         int dataSub = mSubscriptionManager.getDefaultDataSubId();
         boolean defaultDataSelected = mSubscriptionManager.isValidSubscriptionId(dataSub);
-        if (DBG) log("[updateDataSwitchValues] dataSub=" + dataSub + ",tm.getDataEnabled()=" + tm.getDataEnabled());
+        if (DBG) log("[updateDataSwitchValues] dataSub=" + dataSub + ",mTelephonyManager.getDataEnabled()=" + mTelephonyManager.getDataEnabled());
         simPref.setEnabled(defaultDataSelected);
     }
 
@@ -323,6 +293,11 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     public void onResume() {
         super.onResume();
 
+        if (mShowWaitingDialogNeeded) {
+            waitingForDataSwitch();
+        }
+        mShowWaitingDialogNeeded = false;
+
         mSubInfoList = mSubscriptionManager.getActiveSubscriptionInfoList();
         // FIXME: b/18385348, needs to handle null from getActiveSubscriptionInfoList
         if (DBG) log("[onResme] mSubInfoList=" + mSubInfoList);
@@ -339,15 +314,25 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         }
 
         updateAllOptions();
-        //updateDataSwitchState();
     }
 
      @Override
     public void onPause() {
         super.onPause();
-
         if (getActivity() != null) {
             getActivity().unregisterReceiver(mReceiver);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (DBG) log("onActivityResult, requestCode = " + requestCode
+                                   + ", resultCode = " + resultCode
+                                   + ", data = " + data);
+        if (requestCode == REQUEST_SET_DEFAULT_DATA &&
+                 resultCode == Activity.RESULT_OK) {
+            mShowWaitingDialogNeeded = true;
         }
     }
 
@@ -356,13 +341,15 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             final Preference preference) {
         final Context context = getActivity();
         Intent intent = new Intent(context, SimDialogActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //remove this flag because SimDialogActivity is in other task, which will
+        //cause callback onResultActivity not work as excepted
+        //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         if (preference instanceof SimPreference) {
             ((SimPreference)preference).createEditDialog((SimPreference)preference);
         } else if (findPreference(KEY_CELLULAR_DATA) == preference) {
             intent.putExtra(SimDialogActivity.DIALOG_TYPE_KEY, SimDialogActivity.DATA_PICK);
-            context.startActivity(intent);
+            startActivityForResult(intent, REQUEST_SET_DEFAULT_DATA);
         } else if (findPreference(KEY_CALLS) == preference) {
             intent.putExtra(SimDialogActivity.DIALOG_TYPE_KEY, SimDialogActivity.CALLS_PICK);
             context.startActivity(intent);
@@ -377,9 +364,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             } else {
                 preference.setSummary(R.string.cellular_data_switch_close);
             }
-            final TelephonyManager tm = (TelephonyManager) getActivity().
-                    getSystemService(Context.TELEPHONY_SERVICE);
-            tm.setDataEnabled(dataEnabled);
+            mTelephonyManager.setDataEnabled(dataEnabled);
         }
 
         return true;
@@ -478,10 +463,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
                 numberView.setText(PhoneNumberUtils.formatNumber(rawNumber));
             }
 
-            final TelephonyManager tm =
-                        (TelephonyManager) getActivity().getSystemService(
-                        Context.TELEPHONY_SERVICE);
-            String simCarrierName = tm.getSimOperatorNameForSubscription(mSubInfoRecord
+            String simCarrierName = mTelephonyManager.getSimOperatorNameForSubscription(mSubInfoRecord
                         .getSubscriptionId());
             TextView carrierView = (TextView)dialogLayout.findViewById(R.id.carrier);
             carrierView.setText(!TextUtils.isEmpty(simCarrierName) ? simCarrierName :
@@ -598,12 +580,10 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     // Returns the line1Number. Line1number should always be read from TelephonyManager since it can
     // be overridden for display purposes.
     private String getPhoneNumber(SubscriptionInfo info) {
-        final TelephonyManager tm =
-            (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-        return tm.getLine1NumberForSubscriber(info.getSubscriptionId());
+        return mTelephonyManager.getLine1NumberForSubscriber(info.getSubscriptionId());
     }
 
-    private void log(String s) {
+    private static void log(String s) {
         Log.d(TAG, s);
     }
 
@@ -642,20 +622,28 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     }
 
     private static final int MESSAGE_UPDATE_VIEW = 102;
-    private static final int MESSAGE_UPDATE_DATA_SWITCH = 103;
+    private static final int MESSAGE_UPDATE_DEFAULT_DATA = 103;
+    private static final int MESSAGE_DISMISS_DIALOG = 104;
+
+    private static final int MAX_DIALOG_SHOWING_DELAYED = 10000;
 
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
+            if (getActivity() == null) return;
+            if (DBG) log("handle message: " + msg.what);
             switch (msg.what) {
                 case MESSAGE_UPDATE_VIEW:
-                    if (getActivity() == null) return;
                     mSubInfoList = mSubscriptionManager.getActiveSubscriptionInfoList();
                     updatePreferences();
                     updateAllOptions();
                     break;
-                case MESSAGE_UPDATE_DATA_SWITCH:
+                case MESSAGE_UPDATE_DEFAULT_DATA:
                     updateDataSwitchValues();
+                    break;
+                case MESSAGE_DISMISS_DIALOG:
+                    removeDialog(DIALOG_SWITCHING_DEFAULT_DATA_SUB);
+                    break;
                 default:break;
             }
         }
@@ -664,16 +652,73 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
+            if (DBG) log("receive action=" + action);
             if (TelephonyIntents.ACTION_SIM_STATE_CHANGED.equals(action)
                     || TelephonyIntents.ACTION_SUBINFO_RECORD_UPDATED.equals(action)
                     || TelephonyIntents.ACTION_SUBINFO_CONTENT_CHANGE.equals(action)) {
                 mHandler.removeMessages(MESSAGE_UPDATE_VIEW);
                 mHandler.sendEmptyMessage(MESSAGE_UPDATE_VIEW);
-            } else if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION) ||
-                       action.equals(TelephonyIntents.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED)){
-                mHandler.removeMessages(MESSAGE_UPDATE_DATA_SWITCH);
-                mHandler.sendEmptyMessage(MESSAGE_UPDATE_DATA_SWITCH);
+            } else if (TelephonyIntents.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED.equals(action) ||
+                    ConnectivityManager.CONNECTIVITY_ACTION.equals(action)){
+                mHandler.removeMessages(MESSAGE_UPDATE_DEFAULT_DATA);
+                mHandler.sendEmptyMessage(MESSAGE_UPDATE_DEFAULT_DATA);
             }
         }
     };
+
+    private void registerListener() {
+        final int dds = SubscriptionManager.getDefaultDataSubId();
+        mPhoneStateListener = new MobilePhoneStateListener(dds);
+        mTelephonyManager.listen(mPhoneStateListener,
+                    PhoneStateListener.LISTEN_SERVICE_STATE);
+    }
+
+    private void unregisterListener() {
+        mTelephonyManager.listen(mPhoneStateListener, 0);
+    }
+
+    class MobilePhoneStateListener extends PhoneStateListener {
+
+        public MobilePhoneStateListener(int subId) {
+            super(subId);
+        }
+
+        @Override
+        public void onServiceStateChanged(ServiceState state) {
+            if (DBG) log("onServiceStateChanged, state=" + state);
+            if ((null != state) && (state.getDataRegState() == ServiceState.STATE_IN_SERVICE)) {
+                onSwitchDefaultDataSubCompleted();
+            }
+        }
+    }
+
+    private void waitingForDataSwitch() {
+        showDialog(DIALOG_SWITCHING_DEFAULT_DATA_SUB);
+        registerListener();
+    }
+
+    private void onSwitchDefaultDataSubCompleted() {
+        mHandler.removeMessages(MESSAGE_DISMISS_DIALOG);
+        removeDialog(DIALOG_SWITCHING_DEFAULT_DATA_SUB);
+        unregisterListener();
+    }
+
+    @Override
+    public void onDialogShowing() {
+        super.onDialogShowing();
+        if (DBG) log("onDialogShowing");
+        setCancelable(false);
+        mHandler.sendEmptyMessageDelayed(MESSAGE_DISMISS_DIALOG, MAX_DIALOG_SHOWING_DELAYED);
+    }
+
+    @Override
+    public Dialog onCreateDialog(int id) {
+        if (id == DIALOG_SWITCHING_DEFAULT_DATA_SUB) {
+            ProgressDialog dialog = new ProgressDialog(getActivity());
+            dialog.setMessage(getResources().getString(R.string.switching_default_data_sub));
+            dialog.setCancelable(false);
+            return dialog;
+        }
+        return null;
+    }
 }

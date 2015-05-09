@@ -2710,4 +2710,6 @@
 	<string name="cellular_data_switch_title">"移动数据开关"</string>
     <string name="cellular_data_switch_open">"移动数据启用"</string>
     <string name="cellular_data_switch_close">"移动数据关闭"</string>
+
+    <string name="switching_default_data_sub">"请稍候..."</string>
 </resources>

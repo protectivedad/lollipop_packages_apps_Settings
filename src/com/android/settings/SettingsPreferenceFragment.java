@@ -57,6 +57,9 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
 
     private SettingsDialogFragment mDialogFragment;
 
+    protected boolean mIsInForeground = false;
+    protected int mPendingRemovedDialogId = -1;
+
     private String mHelpUrl;
 
     // Cache the content resolver for async callbacks
@@ -133,12 +136,24 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
     @Override
     public void onResume() {
         super.onResume();
+        mIsInForeground = true;
+
+        if (mDialogFragment != null && mPendingRemovedDialogId == mDialogFragment.getDialogId()) {
+            removeDialog(mPendingRemovedDialogId);
+        }
 
         final Bundle args = getArguments();
         if (args != null) {
             mPreferenceKey = args.getString(SettingsActivity.EXTRA_FRAGMENT_ARG_KEY);
             highlightPreferenceIfNeeded();
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        mIsInForeground = false;
     }
 
     @Override
@@ -346,6 +361,15 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
     }
 
     protected void removeDialog(int dialogId) {
+        // If fragment is in the background and onSaveInstanceState may be called
+        // already, then (java.lang.IllegalStateException: Can not perform this
+        // action after onSaveInstanceState) will be thrown.
+        // TO-FIX, we remove the dialog when we came back to the foreground.
+        if (!mIsInForeground) {
+            mPendingRemovedDialogId = dialogId;
+            return;
+        }
+
         // mDialogFragment may not be visible yet in parent fragment's onResume().
         // To be able to dismiss dialog at that time, don't check
         // mDialogFragment.isVisible().
@@ -353,6 +377,7 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
             mDialogFragment.dismiss();
         }
         mDialogFragment = null;
+        mPendingRemovedDialogId = -1;
     }
 
     /**
@@ -374,6 +399,12 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
     protected void setOnDismissListener(DialogInterface.OnDismissListener listener) {
         if (mDialogFragment != null) {
             mDialogFragment.mOnDismissListener = listener;
+        }
+    }
+
+    protected void setCancelable(boolean cancelable) {
+        if (mDialogFragment != null) {
+            mDialogFragment.setCancelable(cancelable);
         }
     }
 
@@ -425,6 +456,7 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
+
             if (savedInstanceState != null) {
                 mDialogId = savedInstanceState.getInt(KEY_DIALOG_ID, 0);
                 mParentFragment = getParentFragment();

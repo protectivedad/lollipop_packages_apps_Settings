@@ -6244,4 +6244,6 @@
 	<string name="cellular_data_switch_title">Data Switch</string>
     <string name="cellular_data_switch_open">Data is on</string>
     <string name="cellular_data_switch_close">Data is off</string>
+
+    <string name="switching_default_data_sub">Please wait...</string>
 </resources>
