@@ -65,6 +65,8 @@ import com.android.internal.telephony.TelephonyIntents;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.SwitchPreference;
@@ -111,7 +113,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private static final int REQUEST_SET_DEFAULT_DATA = 10;
     private static final int DIALOG_SWITCHING_DEFAULT_DATA_SUB = 1001;
 
-    private PhoneStateListener mPhoneStateListener;
+    private HashMap<Integer, MobilePhoneStateListener> mPhoneStateListeners = new HashMap<Integer, MobilePhoneStateListener>();
 
     /**
      * By UX design we use only one Subscription Information(SubInfo) record per SIM slot.
@@ -134,6 +136,8 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private Utils mUtils;
 
     private boolean mShowWaitingDialogNeeded;
+    private int mPreDefaultDataSubId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+    private int mCurDefaultDataSubId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
 
     public SimSettings() {
         super(DISALLOW_CONFIG_SIM);
@@ -333,6 +337,13 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         if (requestCode == REQUEST_SET_DEFAULT_DATA &&
                  resultCode == Activity.RESULT_OK) {
             mShowWaitingDialogNeeded = true;
+            if (data != null) {
+                mPreDefaultDataSubId = data.getIntExtra(SimDialogActivity.SUB_ID_EXTRA,
+                        SubscriptionManager.INVALID_SUBSCRIPTION_ID);
+            }
+            mCurDefaultDataSubId = SubscriptionManager.getDefaultDataSubId();
+            if (DBG) log("onActivityResult, mPreDefaultDataSubId = " + mPreDefaultDataSubId
+                                   + ", mCurDefaultDataSubId = " + mCurDefaultDataSubId);
         }
     }
 
@@ -624,6 +635,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private static final int MESSAGE_UPDATE_VIEW = 102;
     private static final int MESSAGE_UPDATE_DEFAULT_DATA = 103;
     private static final int MESSAGE_DISMISS_DIALOG = 104;
+    private static final int MESSAGE_CHECK_SWITCH_COMPLETED = 105;
 
     private static final int MAX_DIALOG_SHOWING_DELAYED = 10000;
 
@@ -642,7 +654,10 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
                     updateDataSwitchValues();
                     break;
                 case MESSAGE_DISMISS_DIALOG:
-                    removeDialog(DIALOG_SWITCHING_DEFAULT_DATA_SUB);
+                    onSwitchDefaultDataSubTimeout();
+                    break;
+                case MESSAGE_CHECK_SWITCH_COMPLETED:
+                    checkIfSwitchCompleted();
                     break;
                 default:break;
             }
@@ -666,18 +681,35 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         }
     };
 
-    private void registerListener() {
-        final int dds = SubscriptionManager.getDefaultDataSubId();
-        mPhoneStateListener = new MobilePhoneStateListener(dds);
-        mTelephonyManager.listen(mPhoneStateListener,
-                    PhoneStateListener.LISTEN_SERVICE_STATE);
+    private void registerListeners() {
+        startListenForPhoneState(mCurDefaultDataSubId);
+        startListenForPhoneState(mPreDefaultDataSubId);
     }
 
-    private void unregisterListener() {
-        mTelephonyManager.listen(mPhoneStateListener, 0);
+    private void startListenForPhoneState(int subId) {
+        if (SubscriptionManager.isValidSubscriptionId(subId)) {
+            if (DBG) log("startListenForPhone sub " + subId);
+            MobilePhoneStateListener phoneStateListener = new MobilePhoneStateListener(subId);
+            mTelephonyManager.listen(phoneStateListener,
+                        PhoneStateListener.LISTEN_SERVICE_STATE);
+            mPhoneStateListeners.put(subId, phoneStateListener);
+        }
+    }
+
+    private void unregisterListeners() {
+        Iterator<Integer> iterator = mPhoneStateListeners.keySet().iterator();
+        while (iterator.hasNext()) {
+            int id = iterator.next();
+            PhoneStateListener phoneStateListener = mPhoneStateListeners.get(id);
+            mTelephonyManager.listen(phoneStateListener, 0);
+            iterator.remove();
+            if (DBG) log("unregisterListener for sub " + id);
+        }
     }
 
     class MobilePhoneStateListener extends PhoneStateListener {
+
+        private int mDataState = ServiceState.STATE_OUT_OF_SERVICE;
 
         public MobilePhoneStateListener(int subId) {
             super(subId);
@@ -685,22 +717,50 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
 
         @Override
         public void onServiceStateChanged(ServiceState state) {
-            if (DBG) log("onServiceStateChanged, state=" + state);
-            if ((null != state) && (state.getDataRegState() == ServiceState.STATE_IN_SERVICE)) {
-                onSwitchDefaultDataSubCompleted();
-            }
+            if (DBG) log("onServiceStateChanged, sub=" + mSubId + ", state=" + state);
+            mDataState = null != state ? state.getDataRegState() : ServiceState.STATE_OUT_OF_SERVICE;
+            mHandler.removeMessages(MESSAGE_CHECK_SWITCH_COMPLETED);
+            mHandler.sendEmptyMessage(MESSAGE_CHECK_SWITCH_COMPLETED);
+        }
+
+        public int getDataState() {
+            return mDataState;
+        }
+    }
+
+    private void checkIfSwitchCompleted() {
+        int preDataState = ServiceState.STATE_OUT_OF_SERVICE;
+        int curDataState = ServiceState.STATE_OUT_OF_SERVICE;
+        if (mPhoneStateListeners.get(mPreDefaultDataSubId) != null) {
+            preDataState = mPhoneStateListeners.get(mPreDefaultDataSubId).getDataState();
+        }
+        if (mPhoneStateListeners.get(mCurDefaultDataSubId) != null) {
+            curDataState = mPhoneStateListeners.get(mCurDefaultDataSubId).getDataState();
+        }
+        if (DBG) log("checkIfSwitchCompleted, preDataState=" + preDataState + ", curDataState=" + curDataState);
+        if (preDataState == ServiceState.STATE_OUT_OF_SERVICE &&
+                curDataState == ServiceState.STATE_IN_SERVICE) {
+            onSwitchDefaultDataSubCompleted();
         }
     }
 
     private void waitingForDataSwitch() {
+        if (DBG) log("waitingForDataSwitch()");
         showDialog(DIALOG_SWITCHING_DEFAULT_DATA_SUB);
-        registerListener();
+        registerListeners();
     }
 
     private void onSwitchDefaultDataSubCompleted() {
+        if (DBG) log("onSwitchDefaultDataSubCompleted");
         mHandler.removeMessages(MESSAGE_DISMISS_DIALOG);
+        unregisterListeners();
         removeDialog(DIALOG_SWITCHING_DEFAULT_DATA_SUB);
-        unregisterListener();
+    }
+
+    private void onSwitchDefaultDataSubTimeout() {
+        if (DBG) log("onSwitchDefaultDataSubTimeout");
+        unregisterListeners();
+        removeDialog(DIALOG_SWITCHING_DEFAULT_DATA_SUB);
     }
 
     @Override

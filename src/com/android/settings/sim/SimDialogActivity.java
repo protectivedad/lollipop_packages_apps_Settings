@@ -63,6 +63,8 @@ public class SimDialogActivity extends Activity {
     public static final int SMS_PICK = 2;
     public static final int PREFERRED_PICK = 3;
 
+    public static final String SUB_ID_EXTRA = "extra_sub_id";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -177,9 +179,14 @@ public class SimDialogActivity extends Activity {
 
                         final SubscriptionInfo sir;
                         boolean result = false;
+                        Intent dataIntent = null;
                         switch (id) {
                             case DATA_PICK:
                                 sir = subInfoList.get(value);
+                                final SubscriptionManager subscriptionManager = SubscriptionManager.from(context);
+                                final int preDds = subscriptionManager.getDefaultDataSubId();
+                                dataIntent = new Intent();
+                                dataIntent.putExtra(SUB_ID_EXTRA, preDds);
                                 result = setDefaultDataSubId(context, sir.getSubscriptionId());
                                 break;
                             case CALLS_PICK:
@@ -202,7 +209,7 @@ public class SimDialogActivity extends Activity {
                                 throw new IllegalArgumentException("Invalid dialog type "
                                         + id + " in SIM dialog.");
                         }
-                        setResult(result ? RESULT_OK : RESULT_CANCELED);
+                        setResult(result ? RESULT_OK : RESULT_CANCELED, dataIntent);
                         finish();
                     }
                 };
