@@ -645,7 +645,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private static final int MESSAGE_DISMISS_DIALOG = 104;
     private static final int MESSAGE_CHECK_SWITCH_COMPLETED = 105;
 
-    private static final int MAX_DIALOG_SHOWING_DELAYED = 10000;
+    private static final int MAX_DIALOG_SHOWING_DELAYED = 30000;
 
     Handler mHandler = new Handler() {
         @Override
