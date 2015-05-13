@@ -968,6 +968,7 @@ public class InstalledAppDetails extends Fragment
     }
     
     private void refreshSizeInfo() {
+      if(mAppSize != null){
         if (mAppEntry.size == ApplicationsState.SIZE_INVALID
                 || mAppEntry.size == ApplicationsState.SIZE_UNKNOWN) {
             mLastCodeSize = mLastDataSize = mLastCacheSize = mLastTotalSize = -1;
@@ -1032,6 +1033,7 @@ public class InstalledAppDetails extends Fragment
             mClearCacheButton.setEnabled(false);
             mClearDataButton.setEnabled(false);
         }
+      }
     }
     
     /*
