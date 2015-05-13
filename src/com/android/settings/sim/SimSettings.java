@@ -75,7 +75,7 @@ import android.content.BroadcastReceiver;
 
 public class SimSettings extends RestrictedSettingsFragment implements Indexable {
     private static final String TAG = "SimSettings";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     private static final String DISALLOW_CONFIG_SIM = "no_config_sim";
     private static final String SIM_CARD_CATEGORY = "sim_cards";
@@ -253,17 +253,25 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
 
     private void updateDataSwitchValues(){
         final Preference simPref = findPreference(KEY_DATA_SWITCH);
-        if(mTelephonyManager.getDataEnabled()){
-            ((SwitchPreference) simPref).setChecked(true);
-            simPref.setSummary(R.string.cellular_data_switch_open);
-        } else {
-            ((SwitchPreference) simPref).setChecked(false);
-            simPref.setSummary(R.string.cellular_data_switch_close);
+        if(mSelectableSubInfos.size() >= 1){
+            simPref.setEnabled(true);
+            if(mTelephonyManager.getDataEnabled()){
+                ((SwitchPreference) simPref).setChecked(true);
+                simPref.setSummary(R.string.cellular_data_switch_open);
+            } else {
+                ((SwitchPreference) simPref).setChecked(false);
+                simPref.setSummary(R.string.cellular_data_switch_close);
+            }
         }
-        int dataSub = mSubscriptionManager.getDefaultDataSubId();
-        boolean defaultDataSelected = mSubscriptionManager.isValidSubscriptionId(dataSub);
-        if (DBG) log("[updateDataSwitchValues] dataSub=" + dataSub + ",mTelephonyManager.getDataEnabled()=" + mTelephonyManager.getDataEnabled());
-        simPref.setEnabled(defaultDataSelected);
+        else{
+            simPref.setEnabled(false);
+            ((SwitchPreference) simPref).setChecked(false);
+        }
+        //int dataSub = mSubscriptionManager.getDefaultDataSubId();
+        //boolean defaultDataSelected = mSubscriptionManager.isValidSubscriptionId(dataSub);
+        //if (DBG) log("[updateDataSwitchValues] dataSub=" + dataSub + ",mTelephonyManager.getDataEnabled()=" + mTelephonyManager.getDataEnabled());
+        //simPref.setEnabled(defaultDataSelected);
+        if (DBG) log("[updateDataSwitchValues] mSelectableSubInfos.size() >= 1=" + (mSelectableSubInfos.size() >= 1));
     }
 
     private void updateCellularDataValues() {
