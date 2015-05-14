@@ -376,7 +376,8 @@ public class WirelessSettings extends SettingsPreferenceFragment
         mGlobalProxy.setEnabled(mDPM.getGlobalProxyAdmin() == null);
 
         boolean isTablet = "box".equals(SystemProperties.get("ro.target.product", "tablet"));
-        if(!isTablet) {
+        String isCts = SystemProperties.get("net.pppoe.cts");
+        if(!isTablet || "true".equals(isCts)) {
             Preference mPppoe = findPreference(KEY_PPPOE_SETTINGS);
             getPreferenceScreen().removePreference(mPppoe);
         }
