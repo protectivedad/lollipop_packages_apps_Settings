@@ -132,7 +132,7 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	    
 	    String resolutionValue=sharedPreferences.getString("resolution", "1280x720p-60");
 	    Log.d(TAG,"onActivityCreated resolutionValue="+resolutionValue);
-	    context.registerReceiver(hdmiReceiver, new IntentFilter("android.intent.action.HDMI_PLUG"));
+	   // context.registerReceiver(hdmiReceiver, new IntentFilter("android.intent.action.HDMI_PLUG"));
 	}
 	
 	
@@ -184,6 +184,8 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		// TODO Auto-generated method stub
 
 		super.onResume();
+               
+	    context.registerReceiver(hdmiReceiver, new IntentFilter("android.intent.action.HDMI_PLUG"));
 		getContentResolver().registerContentObserver(
 				Settings.System.getUriFor(Settings.System.HDMI_LCD_TIMEOUT),
 				true, mHdmiTimeoutSettingObserver);
