@@ -140,7 +140,13 @@ public class EthernetSettings extends SettingsPreferenceFragment
 		mEthdns2 = nullIpInfo;	
 		break;
 	case EthernetManager.ETHER_STATE_CONNECTING:
-		
+                String mStatusString = this.getResources().getString(R.string.ethernet_info_getting);
+                mEthHwAddress = mStatusString;
+                mEthIpAddress = mStatusString;
+                mEthNetmask = mStatusString;
+                mEthGateway = mStatusString;
+                mEthdns1 = mStatusString;
+                mEthdns2 = mStatusString;
 		break;
 	case EthernetManager.ETHER_STATE_CONNECTED:
 		getEthInfo();
@@ -231,8 +237,7 @@ public class EthernetSettings extends SettingsPreferenceFragment
         setStringSummary(KEY_ETH_GATEWAY, mEthGateway);
         setStringSummary(KEY_ETH_DNS1, mEthdns1);
         setStringSummary(KEY_ETH_DNS2, mEthdns2);
-        
-		updateCheckbox();
+	updateCheckbox();
     }
     
     private void updateCheckbox(){  //add by ljh for adding a checkbox switch
@@ -264,14 +269,14 @@ public class EthernetSettings extends SettingsPreferenceFragment
     public boolean onPreferenceChange(Preference preference, Object newValue) {
    // 	 log("onPreferenceTreeclick");
     	if(preference==mkeyEthMode) {
-    		     String value=(String)newValue;
-    		     if(value.equals("DHCP")){
-    		        	mEthManager.setConfiguration(new IpConfiguration(IpAssignment.DHCP, ProxySettings.NONE,null,null));
-    		        	log("switch to dhcp");
-    		     }else if(value.equals("StaticIP")){
-    		        	log("static editor");       	
-    		        	this.showDialog(SHOW_RENAME_DIALOG);
-    		     }
+    	     String value=(String)newValue;
+    	     if(value.equals("DHCP")){
+    	        	mEthManager.setConfiguration(new IpConfiguration(IpAssignment.DHCP, ProxySettings.NONE,null,null));
+    	        	log("switch to dhcp");
+    	     }else if(value.equals("StaticIP")){
+    	        	log("static editor");       	
+    	        	this.showDialog(SHOW_RENAME_DIALOG);
+    	     }
     		
     	}
     	return true;
@@ -483,9 +488,9 @@ public class EthernetSettings extends SettingsPreferenceFragment
     	if(button==ethernet_static_ip_dialog.BUTTON_SUBMIT) {
     	mDialog.saveIpSettingInfo(); //从Dialog获取静态数据  	
     	if(setStaticIpConfiguration()) {
-  		  mEthManager.setConfiguration(mIpConfiguration); 	
+            mEthManager.setConfiguration(mIpConfiguration); 	
     	} else {
-  		 Log.e(TAG, mIpConfiguration.toString());
+            Log.e(TAG, mIpConfiguration.toString());
     	}
     	}
     	updateCheckbox();

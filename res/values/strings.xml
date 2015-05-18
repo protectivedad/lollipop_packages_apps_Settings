@@ -6113,6 +6113,7 @@
      <string name="ethernet_quick_toggle_summary_on">Ethernet is enabled</string>
      <!--Used as title on second screen after selecting Ethernet settings -->
      <string name="ethernet_mode_title">Ethernet Ip mode</string>
+     <string name="ethernet_info_getting">"getting IP info..."</string>
 
      <!--$_rbox_$_modify_$_zhangxueguang_$_begin_$_20120319_$-->
     <!-- sound devices manager -->
