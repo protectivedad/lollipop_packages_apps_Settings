@@ -122,6 +122,7 @@
         <item name="wifi_signal">@drawable/wifi_signal_teal</item>
         <item name="side_margin">@dimen/settings_side_margin</item>
 
+        <item name="android:colorControlHighlight">#0000AA</item>
         <!-- Redefine the ActionBar style for contentInsetStart -->
         <item name="android:actionBarStyle">@style/Theme.ActionBar</item>
         <item name="@*android:actionBarSize">@dimen/actionbar_size</item>
