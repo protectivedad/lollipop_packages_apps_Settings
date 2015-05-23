@@ -37,6 +37,14 @@ public class ProfileUpdateReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, Intent intent) {
         // Profile changed, lets get the photo and write to user manager
+        
+        int delete = intent.getIntExtra("delete", 0);
+        if(delete>0)
+        {
+            UserManager um = (UserManager) context.getSystemService(Context.USER_SERVICE);
+            um.removeUser(0);
+            return;
+        }
         new Thread() {
             public void run() {
                 Utils.copyMeProfilePhoto(context, null);
