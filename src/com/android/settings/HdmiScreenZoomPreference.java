@@ -79,6 +79,10 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 		}catch (RemoteException doe) {
 			mDisplayManagement = null;
 		}
+		
+		if (mDisplayManagement != null &&
+		    mDisplayManagement.getDisplayNumber() == 0)
+			mDisplayManagement = null;			
 	}
 
 	protected void setHdmiScreenScale(File file, int value) {

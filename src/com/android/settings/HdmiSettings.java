@@ -97,14 +97,20 @@ public class HdmiSettings extends SettingsPreferenceFragment
 		addPreferencesFromResource(R.xml.hdmi_settings_timeout);
 		try {
 			mDisplayManagement = new DisplayOutputManager();
-		}catch (RemoteException doe) {
+		} catch (Exception doe) {
+			Log.d(TAG, "Can not get DisplayOutputManager object");
 			mDisplayManagement = null;
 		}
 		if(mDisplayManagement != null) {
-			if (mDisplayManagement.getDisplayNumber() == 2)
-				mDisplay = mDisplayManagement.AUX_DISPLAY;
-			else
+			Log.d(TAG, "mDisplayManagement is not null");
+			
+			if (mDisplayManagement.getDisplayNumber() == 0)
+				mDisplayManagement = null;
+			else if (mDisplayManagement.getDisplayNumber() == 1)
 				mDisplay = mDisplayManagement.MAIN_DISPLAY;
+			else
+				mDisplay = mDisplayManagement.AUX_DISPLAY;
+			
 		}
 		mHdmiLcd = (ListPreference) findPreference(KEY_HDMI_LCD);
 		HdmiDisplayModes = new File("sys/class/display/HDMI/modes");
@@ -248,6 +254,7 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	public boolean onPreferenceChange(Preference preference, Object objValue) {
 		// TODO Auto-generated method stub
 		String key = preference.getKey();
+		Log.d(TAG, key);
 		if (KEY_HDMI_RESOLUTION.equals(key)) {
 			if(mDisplayManagement != null){
 				mDisplayManagement.setMode(mDisplay,4,(String)objValue);
@@ -278,6 +285,7 @@ public class HdmiSettings extends SettingsPreferenceFragment
 
 
 	protected void setHdmiMode(String mode) {
+		Log.d(TAG, "setHdmiMode");
 		HdmiModeTask hdmiModeTask=new HdmiModeTask();
 		hdmiModeTask.execute(mode);
 	}
@@ -289,27 +297,26 @@ public class HdmiSettings extends SettingsPreferenceFragment
 	}
 
 	private String[] getModes() {
-		String[] modelist = mDisplayManagement.getModeList(mDisplay,4);
-		return modelist;
-		/*
-		ArrayList<String> list = new ArrayList<String>();
-		try {
-			//SetModeList(mDisplayManagement.MAIN_DISPLAY,1);
-
-			FileReader fread = new FileReader(HdmiDisplayModes);
-			BufferedReader buffer = new BufferedReader(fread);
-			String str = null;
-
-			while ((str = buffer.readLine()) != null) {
-				list.add(str+"\n");
+		if (mDisplayManagement != null) {
+			String[] modelist = mDisplayManagement.getModeList(mDisplay,4);
+			return modelist;
+		} else {
+			ArrayList<String> list = new ArrayList<String>();
+			try {
+				FileReader fread = new FileReader(HdmiDisplayModes);
+				BufferedReader buffer = new BufferedReader(fread);
+				String str = null;
+	
+				while ((str = buffer.readLine()) != null) {
+					list.add(str+"\n");
+				}
+				fread.close();
+				buffer.close();
+			} catch (IOException e) {
+				Log.e(TAG, "IO Exception");
 			}
-			fread.close();
-			buffer.close();
-		} catch (IOException e) {
-			Log.e(TAG, "IO Exception");
+			return list.toArray(new String[list.size()]);
 		}
-		return list.toArray(new String[list.size()]);
-		*/
 	}
 	
 
