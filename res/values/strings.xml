@@ -6248,4 +6248,11 @@
     <string name="cellular_data_switch_close">Data is off</string>
 
     <string name="switching_default_data_sub">Please wait...</string>
+    
+    <string name="default_data_pick">Default data card</string>
+    <string name="default_call_pick">Default call pick card</string>
+    <string name="default_sms_pick">Default sms pick card</string>
+    <string name="pick_ok">OK</string>
+    <string name="pick_setting">Setting</string>
+    <string name="sim_change_title">SIM card has been changed</string>
 </resources>

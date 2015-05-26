@@ -111,7 +111,7 @@ public class SimBootReceiver extends BroadcastReceiver {
                 intent.putExtra(SimDialogActivity.DIALOG_TYPE_KEY, SimDialogActivity.PREFERRED_PICK);
                 intent.putExtra(SimDialogActivity.PREFERRED_SIM, lastSIMSlotDetected);
             } else {
-                intent.putExtra(SimDialogActivity.DIALOG_TYPE_KEY, SimDialogActivity.DATA_PICK);
+                intent.putExtra(SimDialogActivity.DIALOG_TYPE_KEY, SimDialogActivity.DEFAULT_DATA_PICK);
             }
             mContext.startActivity(intent);
         }

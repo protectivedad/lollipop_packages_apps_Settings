@@ -2714,4 +2714,11 @@
     <string name="cellular_data_switch_close">"移动数据关闭"</string>
 
     <string name="switching_default_data_sub">"请稍候..."</string>
+     
+    <string name="default_data_pick">默认移动数据网路</string>
+    <string name="default_call_pick">默认用于通话SIM卡</string>
+    <string name="default_sms_pick">默认发送信息SIM卡</string>
+    <string name="pick_ok">确认</string>
+    <string name="pick_setting">设置</string>
+    <string name="sim_change_title">SIM卡发生变化</string>
 </resources>
