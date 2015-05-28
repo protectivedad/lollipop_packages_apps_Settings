@@ -373,6 +373,10 @@ public class SimStatus extends PreferenceActivity {
                 }
 
                 mPhone = phone;
+                if (mPhoneStateListener != null) {
+                    mTelephonyManager.listen(mPhoneStateListener,
+                            PhoneStateListener.LISTEN_NONE);
+                }
                 mPhoneStateListener = new PhoneStateListener(mSir.getSubscriptionId()) {
                     @Override
                     public void onDataConnectionStateChanged(int state) {
