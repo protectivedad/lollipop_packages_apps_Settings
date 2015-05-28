@@ -58,6 +58,7 @@ import com.google.android.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.os.SystemProperties;
 
 /**
  * Panel showing storage usage on disk for known {@link StorageVolume} returned
@@ -102,6 +103,10 @@ public class Memory extends SettingsPreferenceFragment implements Indexable {
         final StorageVolume[] storageVolumes = mStorageManager.getVolumeList();
         for (StorageVolume volume : storageVolumes) {
             if (!volume.isEmulated()) {
+            	boolean buildWithUMS=SystemProperties.get("ro.factory.hasUMS", "false").equals("true");
+            	if(!buildWithUMS&&volume.getPath().equals("/mnt/internal_sd")){
+            		continue;
+            	}
                 addCategory(StorageVolumePreferenceCategory.buildForPhysical(context, volume));
             }
         }
@@ -220,7 +225,6 @@ public class Memory extends SettingsPreferenceFragment implements Indexable {
             ConfirmClearCacheFragment.show(this);
             return true;
         }
-
         for (StorageVolumePreferenceCategory category : mCategories) {
             Intent intent = category.intentForClick(preference);
             if (intent != null) {
