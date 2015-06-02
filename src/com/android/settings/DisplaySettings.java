@@ -64,6 +64,8 @@ import android.os.DisplayOutputManager;
 //$_rbox_$_modify_$_end
 import java.util.List;
 import android.os.DisplayOutputManager;
+import android.os.UserHandle;
+import android.database.ContentObserver;
 
 public class DisplaySettings extends SettingsPreferenceFragment implements
         Preference.OnPreferenceChangeListener, OnPreferenceClickListener, Indexable {
@@ -125,6 +127,9 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
     private static int mTime = -1;
     private Handler mHandler;
     private Runnable mRunnable;
+	private SettingsObserver mSettingsObserver;
+    private boolean mUserSet=false;
+    boolean first=true;
     private boolean isTablet;
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -192,6 +197,8 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         }
 
         if (RotationPolicy.isRotationLockToggleVisible(activity)) {
+			mSettingsObserver=new SettingsObserver(mHandler);
+			mSettingsObserver.observe();
             DropDownPreference rotatePreference =
                     (DropDownPreference) findPreference(KEY_AUTO_ROTATE);
             rotatePreference.addItem(activity.getString(R.string.display_auto_rotate_rotate),
@@ -217,11 +224,19 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
                     1 : 0);
             rotatePreference.setCallback(new Callback() {
                 @Override
-                public boolean onItemSelected(int pos, Object value) {
-                    RotationPolicy.setRotationLock(activity, (Boolean) value);
-                    return true;
-                }
-            });
+				public boolean onItemSelected(int pos, Object value) {
+
+                    if (first){
+                        first=false;
+                    }
+                    else
+                    {
+                        mUserSet=true;
+                    }
+					RotationPolicy.setRotationLock(activity, (Boolean) value);
+					return true;
+				}
+			});
         } else {
             removePreference(KEY_AUTO_ROTATE);
         }
@@ -974,4 +989,28 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
                     return result;
                 }
             };
+
+		class SettingsObserver extends ContentObserver {
+		SettingsObserver(Handler handler) {
+			super(handler);
+		}
+		void observe() {
+			ContentResolver resolver = getContentResolver();
+			resolver.registerContentObserver(Settings.System.getUriFor(
+							Settings.System.ACCELEROMETER_ROTATION), true, this,
+					UserHandle.USER_CURRENT);
+		}
+		@Override
+		public void onChange(boolean selfChange) {
+			super.onChange(selfChange);
+            if (mUserSet){
+                mUserSet=false;
+                return;
+            }
+			SettingsActivity sa = (SettingsActivity)getActivity();
+			sa.startPreferencePanel(DisplaySettings.class.getName(), null,
+					R.string.display_settings_title, null, null, 0);
+            sa.finish();
+		}
+	}
 }
