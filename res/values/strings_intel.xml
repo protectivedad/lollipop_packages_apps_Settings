@@ -19,4 +19,23 @@
     <string name="auto_language_title">Automatic Language</string>
     <string name="auto_language_summaryOn">Auto set language according to SIM card country code info</string>
     <string name="auto_language_summaryOff">Auto set language according to SIM card country code info</string>
+
+    <!-- Power save mode -->
+    <string name="power_save_basic_settings">Basic controls</string>
+    <string name="show_power_save_indicator">Show indicator</string>
+    <string name="show_power_save_indicator_summary">Show power save mode enabled indicator on status bar</string>
+    <string name="turn_on_automatically">Turn on power save mode automatically</string>
+    <string name="turn_on_automatically_summary">When battery is less than 15%, turn on power save mode</string>
+    <string name="power_save_sub_settings">Feature controls</string>
+    <string name="limit_cpu">Limit CPU performance</string>
+    <string name="limit_cpu_summary">Limit CPU maximum frequency</string>
+    <string name="limit_brightness">Reduce backlight brightness</string>
+    <string name="limit_brightness_summary">Reduce brightness of backlight to save power</string>
+    <string name="limit_location">Disable location services</string>
+    <string name="limit_location_summary">GPS location services will be disabled</string>
+    <string name="limit_network">Restrict network access</string>
+    <string name="limit_network_summary">Most background data will be disabled</string>
+    <string name="limit_animation">No animation transaction</string>
+    <string name="limit_animation_summary">Window animation transaction will be disabled</string>
+    <string name="power_save_tips">Tips</string>
 </resources>

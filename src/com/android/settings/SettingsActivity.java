@@ -285,6 +285,7 @@ public class SettingsActivity extends Activity
             AndroidBeam.class.getName(),
             WifiDisplaySettings.class.getName(),
             PowerUsageSummary.class.getName(),
+            BatterySaverSettings.class.getName(),
             AccountSyncSettings.class.getName(),
             AccountSettings.class.getName(),
             CryptKeeperSettings.class.getName(),

@@ -124,6 +124,14 @@
                 android:icon="@drawable/ic_settings_battery"
                 />
 
+        <!-- Power Save Mode -->
+        <dashboard-tile
+                android:id="@+id/power_save_settings"
+                android:title="@string/battery_saver"
+                android:fragment="com.android.settings.fuelgauge.BatterySaverSettings"
+                android:icon="@drawable/ic_settings_power_save"
+                />
+
         <!-- Application Settings -->
         <dashboard-tile
                 android:id="@+id/application_settings"

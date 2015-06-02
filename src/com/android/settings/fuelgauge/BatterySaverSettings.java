@@ -30,6 +30,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.SystemProperties;
+import android.preference.Preference;
+import android.preference.PreferenceCategory;
+import android.preference.SwitchPreference;
+import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.util.Log;
 import android.widget.Switch;
@@ -42,10 +47,20 @@ import com.android.settings.notification.SettingPref;
 import com.android.settings.widget.SwitchBar;
 
 public class BatterySaverSettings extends SettingsPreferenceFragment
-        implements SwitchBar.OnSwitchChangeListener {
+        implements Preference.OnPreferenceChangeListener, SwitchBar.OnSwitchChangeListener {
     private static final String TAG = "BatterySaverSettings";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final String KEY_SHOW_INDICATOR = "show_power_save_indicator";
     private static final String KEY_TURN_ON_AUTOMATICALLY = "turn_on_automatically";
+    private static final String KEY_SUB_ITEMS = "sub_items";
+    private static final String KEY_LIMIT_CPU = "limit_cpu";
+    private static final String KEY_LIMIT_BRIGHTNESS = "limit_brightness";
+    private static final String KEY_LIMIT_LOCATION = "limit_location";
+    private static final String KEY_LIMIT_NETWORK = "limit_network";
+    private static final String KEY_LIMIT_ANIMATION = "limit_animation";
+
+    private static final String PROPERTY_THERMAL_ENABLED = "persist.service.thermal";
+
     private static final long WAIT_FOR_SWITCH_ANIM = 500;
 
     private final Handler mHandler = new Handler();
@@ -54,11 +69,18 @@ public class BatterySaverSettings extends SettingsPreferenceFragment
 
     private Context mContext;
     private boolean mCreated;
-    private SettingPref mTriggerPref;
     private SwitchBar mSwitchBar;
     private Switch mSwitch;
     private boolean mValidListener;
     private PowerManager mPowerManager;
+
+    private SwitchPreference mShowIndicatorPref;
+    private SwitchPreference mEnableWhenLowBatteryPref;
+    private SwitchPreference mLimitCPU;
+    private SwitchPreference mLimitBrightness;
+    private SwitchPreference mLimitLocation;
+    private SwitchPreference mLimitNetwork;
+    private SwitchPreference mLimitAnimation;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -75,22 +97,27 @@ public class BatterySaverSettings extends SettingsPreferenceFragment
         mSwitch = mSwitchBar.getSwitch();
         mSwitchBar.show();
 
-        mTriggerPref = new SettingPref(SettingPref.TYPE_GLOBAL, KEY_TURN_ON_AUTOMATICALLY,
-                Global.LOW_POWER_MODE_TRIGGER_LEVEL,
-                0, /*default*/
-                getResources().getIntArray(R.array.battery_saver_trigger_values)) {
-            @Override
-            protected String getCaption(Resources res, int value) {
-                if (value > 0 && value < 100) {
-                    return res.getString(R.string.battery_saver_turn_on_automatically_pct,
-                                         Utils.formatPercentage(value));
-                }
-                return res.getString(R.string.battery_saver_turn_on_automatically_never);
-            }
-        };
-        mTriggerPref.init(this);
-
         mPowerManager = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+
+        mShowIndicatorPref = (SwitchPreference) findPreference(KEY_SHOW_INDICATOR);
+        mShowIndicatorPref.setOnPreferenceChangeListener(this);
+        mEnableWhenLowBatteryPref = (SwitchPreference) findPreference(KEY_TURN_ON_AUTOMATICALLY);
+        mEnableWhenLowBatteryPref.setOnPreferenceChangeListener(this);
+        mLimitCPU = (SwitchPreference) findPreference(KEY_LIMIT_CPU);
+        mLimitCPU.setOnPreferenceChangeListener(this);
+        if (!SystemProperties.getBoolean(PROPERTY_THERMAL_ENABLED, false)) {
+            final PreferenceCategory parent = (PreferenceCategory) findPreference(KEY_SUB_ITEMS);
+            parent.removePreference(mLimitCPU);
+            mLimitCPU = null;
+        }
+        mLimitBrightness = (SwitchPreference) findPreference(KEY_LIMIT_BRIGHTNESS);
+        mLimitBrightness.setOnPreferenceChangeListener(this);
+        mLimitLocation = (SwitchPreference) findPreference(KEY_LIMIT_LOCATION);
+        mLimitLocation.setOnPreferenceChangeListener(this);
+        mLimitNetwork = (SwitchPreference) findPreference(KEY_LIMIT_NETWORK);
+        mLimitNetwork.setOnPreferenceChangeListener(this);
+        mLimitAnimation = (SwitchPreference) findPreference(KEY_LIMIT_ANIMATION);
+        mLimitAnimation.setOnPreferenceChangeListener(this);
     }
 
     @Override
@@ -109,6 +136,35 @@ public class BatterySaverSettings extends SettingsPreferenceFragment
             mValidListener = true;
         }
         updateSwitch();
+        updateBasicItems();
+        updateSubItems();
+    }
+
+    private void updateBasicItems() {
+        if (mShowIndicatorPref != null) {
+            mShowIndicatorPref.setChecked(isShowPowerSaveModeIndicator());
+        }
+        if (mEnableWhenLowBatteryPref != null) {
+            mEnableWhenLowBatteryPref.setChecked(getLowPowerModeTriggerLevel() > 0);
+        }
+    }
+
+    private void updateSubItems() {
+        if (mLimitCPU != null) {
+            mLimitCPU.setChecked(getLimitOnPowerSaveMode(KEY_LIMIT_CPU));
+        }
+        if (mLimitBrightness != null) {
+            mLimitBrightness.setChecked(getLimitOnPowerSaveMode(KEY_LIMIT_BRIGHTNESS));
+        }
+        if (mLimitLocation != null) {
+            mLimitLocation.setChecked(getLimitOnPowerSaveMode(KEY_LIMIT_LOCATION));
+        }
+        if (mLimitNetwork != null) {
+            mLimitNetwork.setChecked(getLimitOnPowerSaveMode(KEY_LIMIT_NETWORK));
+        }
+        if (mLimitAnimation != null) {
+            mLimitAnimation.setChecked(getLimitOnPowerSaveMode(KEY_LIMIT_ANIMATION));
+        }
     }
 
     @Override
@@ -120,6 +176,42 @@ public class BatterySaverSettings extends SettingsPreferenceFragment
             mSwitchBar.removeOnSwitchChangeListener(this);
             mValidListener = false;
         }
+    }
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object objValue) {
+        final String key = preference.getKey();
+
+        if (KEY_SHOW_INDICATOR.equals(key)) {
+            boolean show = (Boolean) objValue;
+            showPowerSaveModeIndicator(show);
+        } else if (KEY_TURN_ON_AUTOMATICALLY.equals(key)) {
+            boolean auto = (Boolean) objValue;
+            setLowPowerModeTriggerLevel(auto ? 15 : 0);
+
+            if (auto) {
+                if (isAllSubItemDisabled()) {
+                    enableAllSubItem();
+                    mHandler.post(mUpdateSubItems);
+                }
+            }
+        } else if (KEY_LIMIT_CPU.equals(key)
+                || KEY_LIMIT_BRIGHTNESS.equals(key)
+                || KEY_LIMIT_LOCATION.equals(key)
+                || KEY_LIMIT_NETWORK.equals(key)
+                || KEY_LIMIT_ANIMATION.equals(key)) {
+            boolean limit = (Boolean) objValue;
+            setLimitOnPowerSaveMode(key, limit);
+
+            if (isAllSubItemDisabled()) {
+                onSwitchChanged(mSwitch, false);
+                setLowPowerModeTriggerLevel(0);
+                if (mEnableWhenLowBatteryPref != null) {
+                    mEnableWhenLowBatteryPref.setChecked(false);
+                }
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -137,6 +229,13 @@ public class BatterySaverSettings extends SettingsPreferenceFragment
         if (!mPowerManager.setPowerSaveMode(mode)) {
             if (DEBUG) Log.d(TAG, "Setting mode failed, fallback to current value");
             mHandler.post(mUpdateSwitch);
+        } else {
+            if (mode) {
+                if (isAllSubItemDisabled()) {
+                    enableAllSubItem();
+                    mHandler.post(mUpdateSubItems);
+                }
+            }
         }
     }
 
@@ -206,7 +305,8 @@ public class BatterySaverSettings extends SettingsPreferenceFragment
         @Override
         public void onChange(boolean selfChange, Uri uri) {
             if (LOW_POWER_MODE_TRIGGER_LEVEL_URI.equals(uri)) {
-                mTriggerPref.update(mContext);
+                int level = getLowPowerModeTriggerLevel();
+                mEnableWhenLowBatteryPref.setChecked(level > 0);
             }
         }
 
@@ -219,4 +319,113 @@ public class BatterySaverSettings extends SettingsPreferenceFragment
             }
         }
     }
+
+    private boolean isShowPowerSaveModeIndicator() {
+        final ContentResolver cr = getContentResolver();
+        final boolean val = Global.getInt(cr, Global.SHOW_LOW_POWER_MODE_INDICATOR, 1) != 0;
+        return val;
+    }
+
+    private void showPowerSaveModeIndicator(boolean show) {
+        final ContentResolver cr = getContentResolver();
+        Settings.Global.putInt(cr, Global.SHOW_LOW_POWER_MODE_INDICATOR, show ? 1 : 0);
+    }
+
+    private int getLowPowerModeTriggerLevel() {
+        final ContentResolver cr = getContentResolver();
+        final int val = Global.getInt(cr, Global.LOW_POWER_MODE_TRIGGER_LEVEL, 0);
+        return val;
+    }
+
+    private void setLowPowerModeTriggerLevel(int val) {
+        final ContentResolver cr = getContentResolver();
+        Settings.Global.putInt(cr, Global.LOW_POWER_MODE_TRIGGER_LEVEL, val);
+    }
+
+    private boolean getLimitOnPowerSaveMode(String key) {
+        final ContentResolver cr = getContentResolver();
+        final boolean val;
+        switch (key) {
+            case KEY_LIMIT_CPU:
+                val = Settings.Global.getInt(cr, Settings.Global.LOW_POWER_MODE_LIMIT_CPU, 1) != 0;
+                break;
+            case KEY_LIMIT_BRIGHTNESS:
+                val = Settings.Global.getInt(cr, Settings.Global.LOW_POWER_MODE_LIMIT_BRIGHTNESS, 1) != 0;
+                break;
+            case KEY_LIMIT_LOCATION:
+                val = Settings.Secure.getInt(cr, Settings.Secure.LOW_POWER_MODE_LIMIT_LOCATION, 1) != 0;
+                break;
+            case KEY_LIMIT_NETWORK:
+                val = Settings.Global.getInt(cr, Settings.Global.LOW_POWER_MODE_LIMIT_NETWORK, 1) != 0;
+                break;
+            case KEY_LIMIT_ANIMATION:
+                val = Settings.Global.getInt(cr, Settings.Global.LOW_POWER_MODE_LIMIT_ANIMATION, 1) != 0;
+                break;
+            default:
+                Log.e(TAG, "Not found settings for " + key);
+                val = false;
+                break;
+        }
+        return val;
+    }
+
+    private void setLimitOnPowerSaveMode(String key, boolean limit) {
+        final ContentResolver cr = getContentResolver();
+        switch (key) {
+            case KEY_LIMIT_CPU:
+                Settings.Global.putInt(cr, Settings.Global.LOW_POWER_MODE_LIMIT_CPU, limit ? 1 : 0);
+                break;
+            case KEY_LIMIT_BRIGHTNESS:
+                Settings.Global.putInt(cr, Settings.Global.LOW_POWER_MODE_LIMIT_BRIGHTNESS, limit ? 1 : 0);
+                break;
+            case KEY_LIMIT_LOCATION:
+                Settings.Secure.putInt(cr, Settings.Secure.LOW_POWER_MODE_LIMIT_LOCATION, limit ? 1 : 0);
+                break;
+            case KEY_LIMIT_NETWORK:
+                Settings.Global.putInt(cr, Settings.Global.LOW_POWER_MODE_LIMIT_NETWORK, limit ? 1 : 0);
+                break;
+            case KEY_LIMIT_ANIMATION:
+                Settings.Global.putInt(cr, Settings.Global.LOW_POWER_MODE_LIMIT_ANIMATION, limit ? 1 : 0);
+                break;
+            default:
+                Log.e(TAG, "Not found settings for " + key);
+                break;
+        }
+    }
+
+    private boolean isAllSubItemDisabled() {
+        if ((mLimitCPU == null || !getLimitOnPowerSaveMode(KEY_LIMIT_CPU))
+                && !getLimitOnPowerSaveMode(KEY_LIMIT_BRIGHTNESS)
+                && !getLimitOnPowerSaveMode(KEY_LIMIT_LOCATION)
+                && !getLimitOnPowerSaveMode(KEY_LIMIT_NETWORK)
+                && !getLimitOnPowerSaveMode(KEY_LIMIT_ANIMATION)) {
+            return true;
+        }
+        return false;
+    }
+
+    private void enableAllSubItem() {
+        if (mLimitCPU != null) {
+            setLimitOnPowerSaveMode(KEY_LIMIT_CPU, true);
+        }
+        if (mLimitBrightness != null) {
+            setLimitOnPowerSaveMode(KEY_LIMIT_BRIGHTNESS, true);
+        }
+        if (mLimitLocation != null) {
+            setLimitOnPowerSaveMode(KEY_LIMIT_LOCATION, true);
+        }
+        if (mLimitNetwork != null) {
+            setLimitOnPowerSaveMode(KEY_LIMIT_NETWORK, true);
+        }
+        if (mLimitAnimation != null) {
+            setLimitOnPowerSaveMode(KEY_LIMIT_ANIMATION, true);
+        }
+    }
+
+   private final Runnable mUpdateSubItems = new Runnable() {
+        @Override
+        public void run() {
+            updateSubItems();
+        }
+    };
 }
