@@ -19,6 +19,12 @@
         android:key="language_keyboard_settings"
         android:title="@string/language_keyboard_settings_title">
 
+    <CheckBoxPreference
+        android:key="auto_language"
+        android:summaryOff="@string/auto_language_summaryOff"
+        android:summaryOn="@string/auto_language_summaryOn"
+        android:title="@string/auto_language_title" />
+
     <PreferenceScreen
             android:key="phone_language"
             android:title="@string/phone_language"
