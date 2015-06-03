@@ -2518,4 +2518,7 @@
     <string name="slot_number" msgid="3762676044904653577">"(插槽 <xliff:g id="SLOT_NUM">%1$d</xliff:g>)"</string>
 
     <string name="switching_default_data_sub">"請稍候..."</string>
+    <string name="cellular_data_switch_title">"行動數據"</string>
+    <string name="cellular_data_switch_open">"行動數據開啟"</string>
+    <string name="cellular_data_switch_close">"行動數據關閉"</string>
 </resources>
