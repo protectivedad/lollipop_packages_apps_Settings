@@ -98,6 +98,7 @@ public class ApnEditor extends PreferenceActivity
     private int mSubId;
     private Resources mRes;
     private TelephonyManager mTelephonyManager;
+    private boolean mIsLocked = false;
 
     /**
      * Standard projection for the interesting columns of a normal note.
@@ -124,7 +125,8 @@ public class ApnEditor extends PreferenceActivity
             Telephony.Carriers.BEARER, // 18
             Telephony.Carriers.ROAMING_PROTOCOL, // 19
             Telephony.Carriers.MVNO_TYPE,   // 20
-            Telephony.Carriers.MVNO_MATCH_DATA  // 21
+            Telephony.Carriers.MVNO_MATCH_DATA,  // 21
+            Telephony.Carriers.IS_LOCKED // 22
     };
 
     private static final int ID_INDEX = 0;
@@ -148,7 +150,7 @@ public class ApnEditor extends PreferenceActivity
     private static final int ROAMING_PROTOCOL_INDEX = 19;
     private static final int MVNO_TYPE_INDEX = 20;
     private static final int MVNO_MATCH_DATA_INDEX = 21;
-
+    private static final int IS_LOCKED_INDEX = 22;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -296,6 +298,30 @@ public class ApnEditor extends PreferenceActivity
             mMvnoMatchData.setText(mCursor.getString(MVNO_MATCH_DATA_INDEX));
         }
 
+        mIsLocked = mCursor.getInt(IS_LOCKED_INDEX) == 1;
+        if (mIsLocked) {
+            mName.setEnabled(false);
+            mApn.setEnabled(false);
+            mProxy.setEnabled(false);
+            mPort.setEnabled(false);
+            mUser.setEnabled(false);
+            mServer.setEnabled(false);
+            mPassword.setEnabled(false);
+            mMmsProxy.setEnabled(false);
+            mMmsPort.setEnabled(false);
+            mMmsc.setEnabled(false);
+            mMcc.setEnabled(false);
+            mMnc.setEnabled(false);
+            mApnType.setEnabled(false);
+            mAuthType.setEnabled(false);
+            mProtocol.setEnabled(false);
+            mRoamingProtocol.setEnabled(false);
+            mCarrierEnabled.setEnabled(false);
+            mBearer.setEnabled(false);
+            mMvnoType.setEnabled(false);
+            mMvnoMatchData.setEnabled(false);
+        }
+
         mName.setSummary(checkNull(mName.getText()));
         mApn.setSummary(checkNull(mApn.getText()));
         mProxy.setSummary(checkNull(mProxy.getText()));
@@ -383,7 +409,9 @@ public class ApnEditor extends PreferenceActivity
             if (values[mvnoIndex].equals("None")) {
                 mMvnoMatchData.setEnabled(false);
             } else {
-                mMvnoMatchData.setEnabled(true);
+                if (!mIsLocked) {
+                    mMvnoMatchData.setEnabled(true);
+                }
             }
             if (newValue != null && newValue.equals(oldValue) == false) {
                 if (values[mvnoIndex].equals("SPN")) {
@@ -452,6 +480,9 @@ public class ApnEditor extends PreferenceActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
+        if (mIsLocked) {
+            return false;
+        }
         // If it's a new APN, then cancel will delete the new entry in onPause
         if (!mNewApn) {
             menu.add(0, MENU_DELETE, 0, R.string.menu_delete)
