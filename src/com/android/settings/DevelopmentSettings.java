@@ -142,6 +142,8 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
     private static final String SELECT_LOGD_SIZE_KEY = "select_logd_size";
     private static final String SELECT_LOGD_SIZE_PROPERTY = "persist.logd.size";
     private static final String SELECT_LOGD_DEFAULT_SIZE_PROPERTY = "ro.logd.size";
+    private static final String ENABLE_BOOT_CHECK = "enable_boot_check";
+    private static final String BOOT_CHECK_PROPERTY = "persist.sys.boot.check";
 
     private static final String OPENGL_TRACES_KEY = "enable_opengl_traces";
 
@@ -181,6 +183,7 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
     private SwitchPreference mEnableAdb;
     private Preference mClearAdbKeys;
     private SwitchPreference mEnableTerminal;
+    private SwitchPreference mEnableBootCheck;
     private Preference mBugreport;
     private SwitchPreference mBugreportInPower;
     private SwitchPreference mKeepScreenOn;
@@ -245,6 +248,7 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
 
     private Dialog mAdbKeysDialog;
     private boolean mUnavailable;
+    private boolean mHideBootCheck;
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -278,6 +282,14 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
             }
         }
         mAllPrefs.add(mClearAdbKeys);
+
+        mEnableBootCheck = findAndInitSwitchPref(ENABLE_BOOT_CHECK);
+        mHideBootCheck = "".equals(SystemProperties.get(BOOT_CHECK_PROPERTY, ""));
+        if (mHideBootCheck) {
+             removePreference(mEnableBootCheck);
+        }
+        mAllPrefs.add(mEnableBootCheck);
+
         mEnableTerminal = findAndInitSwitchPref(ENABLE_TERMINAL);
         if (!isPackageInstalled(getActivity(), TERMINAL_APP_PACKAGE)) {
             debugDebuggingCategory.removePreference(mEnableTerminal);
@@ -546,6 +558,7 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
         updateSimulateColorSpace();
         updateUseNuplayerOptions();
         updateUSBAudioOptions();
+        updateBootCheckOptions();
     }
 
     private void resetDangerousOptions() {
@@ -755,6 +768,19 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
     private void updateShowTouchesOptions() {
         updateSwitchPreference(mShowTouches, Settings.System.getInt(getActivity().getContentResolver(),
                 Settings.System.SHOW_TOUCHES, 0) != 0);
+    }
+
+    private void updateBootCheckOptions() {
+        if (!mHideBootCheck) {
+            updateSwitchPreference(mEnableBootCheck, SystemProperties.getBoolean(BOOT_CHECK_PROPERTY, true));
+        }
+    }
+
+    private void writeBootCheckOptions() {
+        if (!mHideBootCheck) {
+            SystemProperties.set(BOOT_CHECK_PROPERTY, mEnableBootCheck.isChecked() ? "true" : "false");
+            pokeSystemProperties();
+        }
     }
 
     private void updateFlingerOptions() {
@@ -1454,6 +1480,8 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
             writeUseAwesomePlayerOptions();
         } else if (preference == mUSBAudio) {
             writeUSBAudioOptions();
+        } else if (preference == mEnableBootCheck) {
+            writeBootCheckOptions();
         } else {
             return super.onPreferenceTreeClick(preferenceScreen, preference);
         }

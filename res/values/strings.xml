@@ -3391,6 +3391,9 @@
     <!-- Error message for users that aren't allowed to modify Access Point Names settings [CHAR LIMIT=none] -->
     <string name="apn_settings_not_available">Access Point Name settings are not available for this user</string>
     <string name="enable_adb">USB debugging</string>
+    <string name="enable_boot_check">Boot check</string>
+    <!-- Setting checkbox summary for Whether to enable booting check support on the phone -->
+    <string name="enable_boot_check_summary">run dexopt for apps when boot accident detected</string>
     <!-- Setting checkbox summary for Whether to enable USB debugging support on the phone -->
     <string name="enable_adb_summary">Debug mode when USB is connected</string>
     <!-- Setting title to revoke secure USB debugging authorizations -->

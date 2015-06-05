@@ -60,6 +60,11 @@
             android:fragment="com.android.settings.applications.ProcessStatsUi">
     </PreferenceScreen>
 
+    <SwitchPreference
+            android:key="enable_boot_check"
+            android:title="@string/enable_boot_check"
+            android:summary="@string/enable_boot_check_summary"/>
+
     <PreferenceCategory android:key="debug_debugging_category"
             android:title="@string/debug_debugging_category">
 
