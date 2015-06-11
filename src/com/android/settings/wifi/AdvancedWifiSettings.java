@@ -188,7 +188,7 @@ public class AdvancedWifiSettings extends SettingsPreferenceFragment
         ListPreference sleepPolicyPref = (ListPreference) findPreference(KEY_SLEEP_POLICY);
         if (sleepPolicyPref != null) {
             if (Utils.isWifiOnly(context)) {
-                sleepPolicyPref.setEntries(R.array.wifi_sleep_policy_entries_wifi_only);
+                sleepPolicyPref.setEntries(R.array.new_wifi_sleep_policy_entries_wifi_only);
             }
             sleepPolicyPref.setOnPreferenceChangeListener(this);
             int value = Settings.Global.getInt(getContentResolver(),
@@ -216,7 +216,7 @@ public class AdvancedWifiSettings extends SettingsPreferenceFragment
         if (value != null) {
             String[] values = getResources().getStringArray(R.array.wifi_sleep_policy_values);
             final int summaryArrayResId = Utils.isWifiOnly(getActivity()) ?
-                    R.array.wifi_sleep_policy_entries_wifi_only : R.array.wifi_sleep_policy_entries;
+                    R.array.new_wifi_sleep_policy_entries_wifi_only : R.array.new_wifi_sleep_policy_entries;
             String[] summaries = getResources().getStringArray(summaryArrayResId);
             for (int i = 0; i < values.length; i++) {
                 if (value.equals(values[i])) {
