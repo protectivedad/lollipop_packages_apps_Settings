@@ -284,6 +284,11 @@ public class NotificationSettings extends SettingsPreferenceFragment implements 
             root.removePreference(mPhoneRingtonePreference);
             mPhoneRingtonePreference = null;
         }
+        if(mPhoneRingtonePreference != null && !mVoiceCapable && ((SystemProperties.get("persist.ril-daemon.disable")).equals("1"))){
+
+            root.removePreference(mPhoneRingtonePreference);
+            mPhoneRingtonePreference = null;
+        }
         mNotificationRingtonePreference = root.findPreference(KEY_NOTIFICATION_RINGTONE);
     }
 
