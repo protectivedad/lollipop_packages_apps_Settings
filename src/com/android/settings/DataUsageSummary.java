@@ -1186,8 +1186,6 @@ public class DataUsageSummary extends HighlightingFragment implements Indexable 
                     ConfirmDataDisableFragment.show(DataUsageSummary.this, getSubId(mCurrentTab));
                 }
             }
-
-            updatePolicy(false);
         }
     };
 
