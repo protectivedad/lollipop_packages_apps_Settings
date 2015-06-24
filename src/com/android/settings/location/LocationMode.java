@@ -20,6 +20,7 @@ import android.preference.PreferenceScreen;
 import android.provider.Settings;
 
 import com.android.settings.R;
+import android.os.SystemProperties;
 
 /**
  * A page with 3 radio buttons to choose the location mode.
@@ -68,6 +69,10 @@ public class LocationMode extends LocationSettingsBase
         mSensorsOnly.setOnClickListener(this);
 
         refreshLocationMode();
+		String hasGPS = SystemProperties.get("ro.factory.hasGPS");
+        if("false".equals(hasGPS)) {
+        	root.removePreference(mSensorsOnly);
+        }
         return root;
     }
 
