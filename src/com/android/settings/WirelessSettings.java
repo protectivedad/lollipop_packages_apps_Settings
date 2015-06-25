@@ -357,6 +357,8 @@ public class WirelessSettings extends SettingsPreferenceFragment
         if (!isSmsSupported()) {
             removePreference(KEY_SMS_APPLICATION);
         }
+		//add by ljh 
+		removePreference(KEY_MANAGE_MOBILE_PLAN);
        //add by rochip xxh  revmoe KEY_MANAGE_MOBILE_PLAN when device is used as a MID
        if((SystemProperties.get("ril.function.dataonly")).equals("1")){
 	    removePreference(KEY_SMS_APPLICATION);
