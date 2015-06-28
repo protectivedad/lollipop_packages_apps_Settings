@@ -185,10 +185,10 @@ public class EthernetSettings extends SettingsPreferenceFragment
             mkeyEthMode=(ListPreference)findPreference(KEY_ETH_MODE);
             mkeyEthMode.setOnPreferenceChangeListener(this);
         }
-        /*
+        
         if (mEthCheckBox== null) {
             mEthCheckBox =  (SwitchPreference) findPreference("ethernet");
-        }*/
+        }
         handleEtherStateChange(mEthManager.getEthernetConnectState());
         refreshUI();
         log("resume");
@@ -250,8 +250,8 @@ public class EthernetSettings extends SettingsPreferenceFragment
         	((CheckBoxPreference)findPreference("static_ethernet")).setChecked(!useDhcp);
         	((CheckBoxPreference)findPreference("dhcp_ethernet")).setChecked(useDhcp);
         }
-       */ 
-  
+      */  
+         
         if(mEthManager==null){   	
         	mkeyEthMode.setSummary("null");
         } else {
@@ -263,6 +263,10 @@ public class EthernetSettings extends SettingsPreferenceFragment
         		mkeyEthMode.setValue("StaticIP");
         		mkeyEthMode.setSummary(R.string.usestatic);
         	}
+                int isEnable = mEthManager.getEthernetIfaceState();
+                if(isEnable == EthernetManager.ETHER_IFACE_STATE_UP) {
+                   mEthCheckBox.setChecked(true);   
+                }else mEthCheckBox.setChecked(false);
         }    
     }
     @Override
@@ -283,18 +287,25 @@ public class EthernetSettings extends SettingsPreferenceFragment
     }
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen screen, Preference preference) {
-    	/*
+    	
         if (preference == mEthCheckBox) {
             boolean newState = mEthCheckBox.isChecked();
-            log("IpAssignment: "+mEthManager.getConfiguration().toString());
-        } else if(preference ==  (CheckBoxPreference) findPreference("dhcp_ethernet")) {//config dhcp
+            if(newState) {
+                log("turn on Ethernet");
+                mEthManager.setEthernetEnabled(true);   
+            } else {
+                log("turn off Ethernet");
+                mEthManager.setEthernetEnabled(false);
+            }
+            //log("IpAssignment: "+mEthManager.getConfiguration().toString());
+        }
+       /* else if(preference ==  (CheckBoxPreference) findPreference("dhcp_ethernet")) {//config dhcp
         	mEthManager.setConfiguration(new IpConfiguration(IpAssignment.DHCP, ProxySettings.NONE,null,null));
         	log("switch to dhcp");
        } else if (preference ==  (CheckBoxPreference) findPreference("static_ethernet")) { //config static ip
         	log("static editor");       	
         	this.showDialog(SHOW_RENAME_DIALOG);
-        }
-       */
+       }*/
         return super.onPreferenceTreeClick(screen, preference);
     } 
     

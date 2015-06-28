@@ -4,7 +4,7 @@
     android:title="@string/ethernet_settings" >
 
     <!-- $_rbox_$_modify_$_lijiehong: change to support bluetooth checkbox -->
-  <!--
+
     <SwitchPreference
         android:key="ethernet"
         android:title="@string/ethernet_quick_toggle_title"
@@ -12,13 +12,13 @@
         android:summaryOn="@string/ethernet_quick_toggle_summary_on"
         android:persistent="false"
         android:disableDependentsState="true" />
-    
+<!--    
     <Preference
         style="?android:preferenceInformationStyle"
         android:key="ethernet_hw_addr"
         android:summary="@string/device_info_default"
         android:title="@string/ethernet_hw_addr" />
- --> 
+-->
     <!-- ethernet ip address -->
     <Preference
         style="?android:preferenceInformationStyle"
