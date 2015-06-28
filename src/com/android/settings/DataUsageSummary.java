@@ -833,13 +833,15 @@ public class DataUsageSummary extends HighlightingFragment implements Indexable 
 
         int seriesColor = resources.getColor(R.color.sim_noitification);
         if (mCurrentTab != null && mCurrentTab.length() > TAB_MOBILE.length() ){
-            final int slotId = Integer.parseInt(mCurrentTab.substring(TAB_MOBILE.length(),
-                    mCurrentTab.length()));
-            final SubscriptionInfo sir = com.android.settings.Utils.findRecordBySlotId(context,
-                    slotId);
+            if(!TAB_ETHERNET.equals(currentTab)) {
+                final int slotId = Integer.parseInt(mCurrentTab.substring(TAB_MOBILE.length(),
+                        mCurrentTab.length()-1));
+                final SubscriptionInfo sir = com.android.settings.Utils.findRecordBySlotId(context,
+                        slotId);
 
-            if (sir != null) {
-                seriesColor = sir.getIconTint();
+                if (sir != null) {
+                    seriesColor = sir.getIconTint();
+                }
             }
         }
 
