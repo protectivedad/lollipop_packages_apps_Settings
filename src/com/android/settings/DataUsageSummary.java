@@ -835,7 +835,7 @@ public class DataUsageSummary extends HighlightingFragment implements Indexable 
         if (mCurrentTab != null && mCurrentTab.length() > TAB_MOBILE.length() ){
             if(!TAB_ETHERNET.equals(currentTab)) {
                 final int slotId = Integer.parseInt(mCurrentTab.substring(TAB_MOBILE.length(),
-                        mCurrentTab.length()-1));
+                        mCurrentTab.length()));
                 final SubscriptionInfo sir = com.android.settings.Utils.findRecordBySlotId(context,
                         slotId);
 
