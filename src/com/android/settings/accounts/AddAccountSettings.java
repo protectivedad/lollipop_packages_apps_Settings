@@ -22,6 +22,7 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -36,8 +37,10 @@ import com.android.settings.R;
 import com.android.settings.Utils;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import static android.content.Intent.EXTRA_USER;
+
 
 /**
  * Entry point Activity for account setup. Works as follows
@@ -124,6 +127,7 @@ public class AddAccountSettings extends Activity {
     };
 
     private boolean mAddAccountCalled = false;
+    private boolean mKill=false;
     private UserHandle mUserHandle;
 
     @Override
@@ -155,13 +159,18 @@ public class AddAccountSettings extends Activity {
         final String[] accountTypes =
                 getIntent().getStringArrayExtra(AccountPreferenceBase.ACCOUNT_TYPES_FILTER_KEY);
         final Intent intent = new Intent(this, ChooseAccountActivity.class);
+
         if (authorities != null) {
             intent.putExtra(AccountPreferenceBase.AUTHORITIES_FILTER_KEY, authorities);
+            if (authorities.length==1){
+                mKill="com.android.calendar".equals(authorities[0]);
+            }
         }
         if (accountTypes != null) {
             intent.putExtra(AccountPreferenceBase.ACCOUNT_TYPES_FILTER_KEY, accountTypes);
         }
         intent.putExtra(EXTRA_USER, mUserHandle);
+
         startActivityForResult(intent, CHOOSE_ACCOUNT_REQUEST);
     }
 
@@ -183,6 +192,17 @@ public class AddAccountSettings extends Activity {
                 mPendingIntent.cancel();
                 mPendingIntent = null;
             }
+            if (mKill){
+                ActivityManager sd = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
+                try {
+                    Method method= Class.forName("android.app.ActivityManager")
+                            .getMethod("forceStopPackage", String.class);
+                    method.invoke(sd,getBasePackageName());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
             finish();
             break;
         }
