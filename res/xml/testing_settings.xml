@@ -18,6 +18,7 @@
         android:title="@string/testing" >
             
     <PreferenceScreen
+            android:key="phone_info"
             android:title="@string/testing_phone_info">
         <intent android:action="android.intent.action.MAIN"
                 android:targetPackage="com.android.settings"

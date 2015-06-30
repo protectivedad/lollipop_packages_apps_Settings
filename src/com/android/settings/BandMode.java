@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.PhoneFactory;
+import com.android.internal.telephony.PhoneConstants;
+import android.telephony.SubscriptionManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.Handler;
@@ -65,7 +68,12 @@ public class BandMode extends Activity {
         getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT,
                                     WindowManager.LayoutParams.WRAP_CONTENT);
 
-        mPhone = PhoneFactory.getDefaultPhone();
+        int phoneId = SubscriptionManager.DEFAULT_PHONE_INDEX;
+        Intent intent = getIntent();
+        if(intent != null) {
+            phoneId = intent.getIntExtra(PhoneConstants.PHONE_KEY,SubscriptionManager.DEFAULT_PHONE_INDEX);
+        }
+        mPhone = PhoneFactory.getPhone(phoneId);
 
         mBandList = (ListView) findViewById(R.id.band);
         mBandListAdapter = new ArrayAdapter<BandListItem>(this,
