@@ -69,19 +69,37 @@ public class SimBootReceiver extends BroadcastReceiver {
         int numSIMsDetected = 0;
         int lastSIMSlotDetected = -1;
 
-        // Do not create notifications on single SIM devices or when provisiong.
-        if (numSlots < 2 || isInProvisioning) {
+        // Do not create notifications on single SIM devices or when provisiong or airplane mode on
+        if (numSlots < 2 || isInProvisioning || (Settings.Global.getInt(mContext.getContentResolver(),
+                Settings.Global.AIRPLANE_MODE_ON, 0) != 0)) {
             return;
         }
 
-        // We wait until SubscriptionManager returns a valid list of Subscription informations
-        // by checking if the list is empty.
-        // This is not completely correct, but works for most cases.
-        // See Bug: 18377252
+        for (int i = 0; i < TelephonyManager.getDefault().getPhoneCount(); i++) {
+            if (TelephonyManager.getDefault().hasIccCard(i)) {
+                numSIMsDetected++;
+            }
+        }
+
         List<SubscriptionInfo> sil = mSubscriptionManager.getActiveSubscriptionInfoList();
+        // if numSIMsDetected is 2, sil.size may be 1 because of another subInfo hasn't been loaded yet,
+        // then we should wait all subInfo is loaded(sil.size() == numSIMsDetected), then we can clear the
+        // subinfo which no longer exist and show the notification if needed
         if (sil == null || sil.size() < 1) {
             return;
-        }
+        } else if (sil.size() == numSIMsDetected) {
+            // Cancel any previous notifications
+            cancelNotification(mContext);
+            // Clear defaults for any subscriptions which no longer exist
+            mSubscriptionManager.clearDefaultsForInactiveSubIds();
+            boolean dataSelected = SubscriptionManager.isUsableSubIdValue(
+                    SubscriptionManager.getDefaultDataSubId());
+            boolean smsSelected = SubscriptionManager.isUsableSubIdValue(
+                    SubscriptionManager.getDefaultSmsSubId());
+            // If data and sms defaults are selected, dont show notification (Calls default is optional)
+            if (dataSelected && smsSelected) {
+                return;
+            }
 
         for (int i = 0; i < numSlots; i++) {
             final SubscriptionInfo sir = Utils.findRecordBySlotId(mContext, i);
@@ -116,6 +134,7 @@ public class SimBootReceiver extends BroadcastReceiver {
             mContext.startActivity(intent);
         }
     }
+	}
 
     private int getLastSubId(String strSlotId) {
         return mSharedPreferences.getInt(strSlotId, SLOT_EMPTY);
