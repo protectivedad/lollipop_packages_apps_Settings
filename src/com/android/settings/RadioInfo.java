@@ -29,6 +29,7 @@ import android.os.AsyncResult;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcel;
 import android.os.SystemProperties;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
@@ -95,6 +96,8 @@ public class RadioInfo extends Activity {
 
     static final String ENABLE_DATA_STR = "Enable data connection";
     static final String DISABLE_DATA_STR = "Disable data connection";
+    public static final int RIL_OEM_HOOK_RAW_UNSOL_SCELL_INFO_REPORT = 0x00000100 + 101;
+    public static final int RIL_OEM_HOOK_STRING_GET_SCELL_INFO = 0x000000FE;
 
     private TextView mDeviceId; //DeviceId is the IMEI in GSM and the MEID in CDMA
     private TextView number;
@@ -108,6 +111,7 @@ public class RadioInfo extends Activity {
     private TextView mMwi;
     private TextView mCfi;
     private TextView mLocation;
+    private TextView mServingCell;
     private TextView mNeighboringCids;
     private TextView mCellInfo;
     private TextView mDcRtInfoTv;
@@ -211,6 +215,30 @@ public class RadioInfo extends Activity {
             updatePhoneState();
         }
 
+        @Override
+        public void onOemHookRawEvent(byte[] rawData) {
+            Parcel p = Parcel.obtain();
+            p.unmarshall(rawData, 0, rawData.length);
+            p.setDataPosition(0);
+
+            final int msgId = p.readInt();
+            log("onOemHookRawEvent msgId:"+msgId);
+            if(msgId == RIL_OEM_HOOK_RAW_UNSOL_SCELL_INFO_REPORT) {
+                int scell_rat = p.readInt();
+                int bcch_freq = p.readInt();
+                int bsic = p.readInt();
+                int rxlev = p.readInt();
+                int uarfcn = p.readInt();
+                int psc = p.readInt();
+                int rscp = p.readInt();
+                if(scell_rat == 1){// UTA_RAT_GSM
+                    mServingCell.setText("bcch_freq=" + bcch_freq + ",bsic=" + bsic + ",rxlev=" + rxlev);
+                } else if(scell_rat == 2){ //UTA_RAT_UMTS
+                    mServingCell.setText("uarfcn=" + uarfcn + ",psc=" + psc + ",rscp=" + rscp);
+                }
+            }
+            p.recycle();
+        }
     };
 
     private Handler mHandler = new Handler() {
@@ -294,6 +322,7 @@ public class RadioInfo extends Activity {
         mMwi = (TextView) findViewById(R.id.mwi);
         mCfi = (TextView) findViewById(R.id.cfi);
         mLocation = (TextView) findViewById(R.id.location);
+        mServingCell = (TextView) findViewById(R.id.serving_cell);
         mNeighboringCids = (TextView) findViewById(R.id.neighboring);
         mCellInfo = (TextView) findViewById(R.id.cellinfo);
         mDcRtInfoTv = (TextView) findViewById(R.id.dcrtinfo);
@@ -359,6 +388,9 @@ public class RadioInfo extends Activity {
                 mHandler.obtainMessage(EVENT_QUERY_PREFERRED_TYPE_DONE));
         phone.getNeighboringCids(
                 mHandler.obtainMessage(EVENT_QUERY_NEIGHBORING_CIDS_DONE));
+
+        String[] requestStr = new String[] {Integer.toString(RIL_OEM_HOOK_STRING_GET_SCELL_INFO)};
+        phone.invokeOemRilRequestStrings(requestStr, null);
 
         phone.updateServiceLocation();
 
@@ -440,7 +472,8 @@ public class RadioInfo extends Activity {
                 | PhoneStateListener.LISTEN_DATA_CONNECTION_REAL_TIME_INFO
                 | PhoneStateListener.LISTEN_SERVICE_STATE
                 | PhoneStateListener.LISTEN_SIGNAL_STRENGTH
-                | PhoneStateListener.LISTEN_CALL_STATE);
+                | PhoneStateListener.LISTEN_CALL_STATE
+                | PhoneStateListener.LISTEN_OEM_HOOK_RAW_EVENT);
     }
 
     @Override
