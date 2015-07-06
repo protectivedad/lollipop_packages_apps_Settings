@@ -6238,6 +6238,7 @@
      <!--$_rbox_$_modify_$_end -->
 
    <string name="smsc_update_success">set smsc success</string>
+   <string name="smsc_input_first">Input the smsc, please</string>
 
     <!-- button lights settings -->
     <string name="button_lights_enable_title">Front touch button backlights</string>

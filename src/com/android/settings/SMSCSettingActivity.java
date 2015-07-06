@@ -23,6 +23,7 @@ import android.telephony.NeighboringCellInfo;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
 import android.telephony.SubscriptionManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -94,9 +95,14 @@ public class SMSCSettingActivity extends Activity {
     
     OnClickListener mUpdateSmscButtonHandler = new OnClickListener() {
     	public void onClick(View v) {
-    		updateSmscButton.setEnabled(false);
-    		phone.setSmscAddress(smsc.getText().toString(),
-                  mHandler.obtainMessage(EVENT_UPDATE_SMSC_DONE));
+    		if(smsc.getText().toString().trim().length() > 0){    			
+    			updateSmscButton.setEnabled(false);
+    			phone.setSmscAddress(smsc.getText().toString(),
+    					mHandler.obtainMessage(EVENT_UPDATE_SMSC_DONE));
+    		}else{
+    			Toast.makeText(SMSCSettingActivity.this, R.string.smsc_input_first, 
+    					Toast.LENGTH_SHORT).show();
+    		}
     	}
     };
 

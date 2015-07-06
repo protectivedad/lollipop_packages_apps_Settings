@@ -42,6 +42,7 @@ import android.telephony.NeighboringCellInfo;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
 import android.telephony.SubscriptionManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -53,6 +54,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.PhoneConstants;
@@ -1228,6 +1230,14 @@ public class RadioInfo extends Activity {
             updateSmscButton.setEnabled(false);
             phone.setSmscAddress(smsc.getText().toString(),
                     mHandler.obtainMessage(EVENT_UPDATE_SMSC_DONE));
+            if(smsc.getText().toString().trim().length() > 0){        		
+            	updateSmscButton.setEnabled(false);
+            	phone.setSmscAddress(smsc.getText().toString(),
+            		mHandler.obtainMessage(EVENT_UPDATE_SMSC_DONE));
+            }else{
+            	Toast.makeText(RadioInfo.this, R.string.smsc_input_first, 
+            		Toast.LENGTH_SHORT).show();
+            }
         }
     };
 
