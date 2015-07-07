@@ -30,6 +30,8 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -377,14 +379,39 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
                 log("onPreferenceChange, data on/off is changing, ignore this! ");
                 return false;
             }
-            boolean dataEnable = (boolean)newValue;
             mSwitchingType = TYPE_DATA_ONOFF_SWITCH;
             waitingForDataSwitch();
+            boolean dataEnable = (boolean)newValue;
             mTelephonyManager.setDataEnabled(dataEnable);
+            //data state is already as what we want
+            //Need a little delay to wait framework finished
+            if (isDataStateExpected(dataEnable)) {
+                mHandler.sendEmptyMessageDelayed(MESSAGE_DATA_ONOFF_COMPLETED, DISMISS_DIALOG_DELAYED);
+            }
             return true;
         }
 
     };
+
+    private boolean isDataStateExpected(boolean enabled) {
+        //If wifi is connected, mobile data is disconnected always.
+        ConnectivityManager connMgr = (ConnectivityManager) getActivity()
+                        .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifiNetworkInfo = connMgr
+                    .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        if (wifiNetworkInfo != null && wifiNetworkInfo.isConnected()) {
+            log("isDataStateExpected, wifi is connected!");
+            return true;
+        }
+        final int dataState = mTelephonyManager.getDataState();
+        if (DBG) log("isDataStateExpected, enabled = " + enabled + ", dataState = " + dataState);
+        if (enabled) {
+            return dataState == TelephonyManager.DATA_CONNECTED;
+        } else {
+            return dataState == TelephonyManager.DATA_DISCONNECTED ||
+                   dataState == TelephonyManager.DATA_UNKNOWN;
+        }
+    }
 
     @Override
     public boolean onPreferenceTreeClick(final PreferenceScreen preferenceScreen,
@@ -668,8 +695,10 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
     private static final int MESSAGE_DISMISS_DIALOG = 104;
     private static final int MESSAGE_CHECK_SWITCH_COMPLETED = 105;
     private static final int MESSAGE_CHECK_DATA_ONOFF_COMPLETED = 106;
+    private static final int MESSAGE_DATA_ONOFF_COMPLETED = 107;
 
-    private static final int MAX_DIALOG_SHOWING_DELAYED = 30000;
+    private static final int MAX_DIALOG_SHOWING_DELAYED = 30 * 1000;
+    private static final int DISMISS_DIALOG_DELAYED = 2 * 1000;
 
     private static final int TYPE_DATA_SUB_SWITCH = 1001;
     private static final int TYPE_DATA_ONOFF_SWITCH = 1002;
@@ -696,6 +725,9 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
                     break;
                 case MESSAGE_CHECK_DATA_ONOFF_COMPLETED:
                     checkIfDataOnOffCompleted();
+                    break;
+                case MESSAGE_DATA_ONOFF_COMPLETED:
+                    onSwitchDataCompleted();
                     break;
                 default:
                     log("unsupported message!");
