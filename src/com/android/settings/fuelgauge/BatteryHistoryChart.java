@@ -578,7 +578,9 @@ public class BatteryHistoryChart extends View {
                             || rec.time < (mHistStart+(5*60*1000L))) {
                         mStartWallTime = 0;
                     }
-                    lastWallTime = rec.currentTime;
+                    if (rec.currentTime>lastWallTime){
+                        lastWallTime = rec.currentTime;
+                    }
                     lastRealtime = rec.time;
                     if (mStartWallTime == 0) {
                         mStartWallTime = lastWallTime - (lastRealtime-mHistStart);
