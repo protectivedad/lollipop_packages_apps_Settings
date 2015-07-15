@@ -45,7 +45,7 @@ public class TestingSettings extends PreferenceActivity {
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference) {
         final String key = preference.getKey();
-        if (key.equals(PHONE_INFO)) {
+        if (key != null && key.equals(PHONE_INFO)) {
             final Intent intent = new Intent();
             intent.setClassName("com.android.settings", "com.android.settings.RadioInfo");
             intent.putExtra(PhoneConstants.PHONE_KEY,SubscriptionManager.DEFAULT_PHONE_INDEX);
