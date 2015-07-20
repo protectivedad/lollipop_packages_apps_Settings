@@ -226,7 +226,7 @@ public class SecuritySettings extends SettingsPreferenceFragment
                 addPreferencesFromResource(R.xml.security_settings_encrypted);
             } else {
                 // This device supports encryption but isn't encrypted.
-                addPreferencesFromResource(R.xml.security_settings_unencrypted);
+               // addPreferencesFromResource(R.xml.security_settings_unencrypted);
             }
         }
 
