@@ -126,6 +126,34 @@ public class ApnEditor extends PreferenceActivity
             Telephony.Carriers.ROAMING_PROTOCOL, // 19
             Telephony.Carriers.MVNO_TYPE,   // 20
             Telephony.Carriers.MVNO_MATCH_DATA,  // 21
+    };
+
+    /**
+     * Standard projection for the interesting columns of a normal note(sofia3gr).
+     */
+    private static final String[] sofiaProjection = new String[] {
+            Telephony.Carriers._ID,     // 0
+            Telephony.Carriers.NAME,    // 1
+            Telephony.Carriers.APN,     // 2
+            Telephony.Carriers.PROXY,   // 3
+            Telephony.Carriers.PORT,    // 4
+            Telephony.Carriers.USER,    // 5
+            Telephony.Carriers.SERVER,  // 6
+            Telephony.Carriers.PASSWORD, // 7
+            Telephony.Carriers.MMSC, // 8
+            Telephony.Carriers.MCC, // 9
+            Telephony.Carriers.MNC, // 10
+            Telephony.Carriers.NUMERIC, // 11
+            Telephony.Carriers.MMSPROXY,// 12
+            Telephony.Carriers.MMSPORT, // 13
+            Telephony.Carriers.AUTH_TYPE, // 14
+            Telephony.Carriers.TYPE, // 15
+            Telephony.Carriers.PROTOCOL, // 16
+            Telephony.Carriers.CARRIER_ENABLED, // 17
+            Telephony.Carriers.BEARER, // 18
+            Telephony.Carriers.ROAMING_PROTOCOL, // 19
+            Telephony.Carriers.MVNO_TYPE,   // 20
+            Telephony.Carriers.MVNO_MATCH_DATA,  // 21
             Telephony.Carriers.IS_LOCKED // 22
     };
 
@@ -227,8 +255,11 @@ public class ApnEditor extends PreferenceActivity
             finish();
             return;
         }
-
-        mCursor = managedQuery(mUri, sProjection, null, null);
+        if(SystemProperties.get("ro.board.platform").equals("sofia3gr")){
+          mCursor = managedQuery(mUri, sofiaProjection, null, null);
+        }else{
+          mCursor = managedQuery(mUri, sProjection, null, null);
+        }
         mCursor.moveToFirst();
 
         mTelephonyManager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
@@ -297,9 +328,9 @@ public class ApnEditor extends PreferenceActivity
             mMvnoMatchData.setEnabled(false);
             mMvnoMatchData.setText(mCursor.getString(MVNO_MATCH_DATA_INDEX));
         }
-
-        mIsLocked = mCursor.getInt(IS_LOCKED_INDEX) == 1;
-        if (mIsLocked) {
+        if(SystemProperties.get("ro.board.platform").equals("sofia3gr")){
+         mIsLocked = mCursor.getInt(IS_LOCKED_INDEX) == 1;
+         if (mIsLocked) {
             mName.setEnabled(false);
             mApn.setEnabled(false);
             mProxy.setEnabled(false);
@@ -320,8 +351,8 @@ public class ApnEditor extends PreferenceActivity
             mBearer.setEnabled(false);
             mMvnoType.setEnabled(false);
             mMvnoMatchData.setEnabled(false);
+         }
         }
-
         mName.setSummary(checkNull(mName.getText()));
         mApn.setSummary(checkNull(mApn.getText()));
         mProxy.setSummary(checkNull(mProxy.getText()));
@@ -409,8 +440,12 @@ public class ApnEditor extends PreferenceActivity
             if (values[mvnoIndex].equals("None")) {
                 mMvnoMatchData.setEnabled(false);
             } else {
-                if (!mIsLocked) {
+                if(SystemProperties.get("ro.board.platform").equals("sofia3gr")){
+                  if (!mIsLocked) {
                     mMvnoMatchData.setEnabled(true);
+                  }
+                }else{
+                  mMvnoMatchData.setEnabled(true);
                 }
             }
             if (newValue != null && newValue.equals(oldValue) == false) {
@@ -480,8 +515,10 @@ public class ApnEditor extends PreferenceActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        if (mIsLocked) {
+        if(SystemProperties.get("ro.board.platform").equals("sofia3gr")){
+         if (mIsLocked) {
             return false;
+         }
         }
         // If it's a new APN, then cancel will delete the new entry in onPause
         if (!mNewApn) {
