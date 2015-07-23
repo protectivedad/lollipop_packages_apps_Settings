@@ -39,6 +39,11 @@
     <string name="limit_animation_summary">Window animation transaction will be disabled</string>
     <string name="power_save_tips">Tips</string>
 
+    <string name="sim_slot_disable_warning">SIM will be disabled. Continue?</string>
+    <string name="sim_slot_disable_onging_notify">SIM is going to be disabled, it may take some time...</string>
+    <string name="sim_slot_enable_onging_notify">SIM is going to be enabled, it may take some time...</string>
+    <string name="sim_slot_disabled">SIM disabled</string>
+
     <!-- unlock sim pin strings -->
     <string name="sim_absent">No SIM inserted</string>
     <string name="sim_off">SIM is off</string>

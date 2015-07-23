@@ -39,6 +39,11 @@
     <string name="limit_animation_summary">不顯示視窗切換的動畫效果</string>
     <string name="power_save_tips">提示</string>
 
+    <string name="sim_slot_disable_warning">SIM 卡將被關閉，確定繼續該操作嗎？</string>
+    <string name="sim_slot_disable_onging_notify">SIM 卡將被關閉，這可能需要一些時間...</string>
+    <string name="sim_slot_enable_onging_notify">SIM 卡將被開啟，這可能需要一些時間...</string>
+    <string name="sim_slot_disabled">SIM 卡未啟用</string>
+
     <!-- unlock sim pin strings -->
     <string name="sim_absent">無SIM卡</string>
     <string name="sim_off">SIM卡關閉</string>

@@ -44,6 +44,7 @@ public class SimBootReceiver extends BroadcastReceiver {
     private static final int NOTIFICATION_ID = 1;
     private static final String SHARED_PREFERENCES_NAME = "sim_state";
     private static final String SLOT_PREFIX = "sim_slot_";
+    private static final int NOTIFICATION_ID_SIM_DISABLED = 2;
 
     private SharedPreferences mSharedPreferences = null;
     private TelephonyManager mTelephonyManager;
@@ -59,6 +60,9 @@ public class SimBootReceiver extends BroadcastReceiver {
                 Context.MODE_PRIVATE);
 
         mSubscriptionManager.addOnSubscriptionsChangedListener(mSubscriptionListener);
+        if(anySimDisabled()) {
+            createSimDisabledNotification(mContext);
+        }
     }
 
     private void detectChangeAndNotify() {
@@ -183,5 +187,42 @@ public class SimBootReceiver extends BroadcastReceiver {
             detectChangeAndNotify();
         }
     };
+    private void createSimDisabledNotification(Context context) {
+        final Resources resources = context.getResources();
 
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(context)
+                .setSmallIcon(R.drawable.ic_sim_card_alert_white_48dp)
+                .setColor(resources.getColor(R.color.sim_noitification))
+                .setContentTitle(resources.getString(R.string.sim_slot_disabled))
+                .setContentText(resources.getString(R.string.sim_notification_summary));
+        Intent resultIntent = new Intent(context, SimSettingsActivity.class);
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(
+                context,
+                0,
+                resultIntent,
+                PendingIntent.FLAG_CANCEL_CURRENT
+                );
+        builder.setContentIntent(resultPendingIntent);
+        NotificationManager notificationManager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(NOTIFICATION_ID_SIM_DISABLED, builder.build());
+    }
+
+    public static void cancelSimDisabledNotification(Context context) {
+        NotificationManager notificationManager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(NOTIFICATION_ID_SIM_DISABLED);
+    }
+
+    private boolean anySimDisabled() {
+        for (int i = 0; i < mTelephonyManager.getSimCount(); i++) {
+            if(mTelephonyManager.isSimOff(i)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
