@@ -42,7 +42,9 @@ import android.widget.TabHost.TabSpec;
 import android.widget.TabWidget;
 import android.widget.Toast;
 
+import com.android.internal.telephony.IccCard;
 import com.android.internal.telephony.Phone;
+import com.android.internal.telephony.PhoneConstants;
 import com.android.internal.telephony.PhoneFactory;
 import com.android.internal.telephony.TelephonyIntents;
 
@@ -76,6 +78,7 @@ public class IccLockSettings extends PreferenceActivity
     // Keys in xml file
     private static final String PIN_DIALOG = "sim_pin";
     private static final String PIN_TOGGLE = "sim_toggle";
+    private static final String SIM_UNLOCK_TOGGLE = "sim_unlock_toggle";
     // Keys in icicle
     private static final String DIALOG_STATE = "dialogState";
     private static final String DIALOG_PIN = "dialogPin";
@@ -107,8 +110,11 @@ public class IccLockSettings extends PreferenceActivity
 
     private EditPinPreference mPinDialog;
     private SwitchPreference mPinToggle;
+    private Preference mUnlockToggle;
 
     private Resources mRes;
+
+    private boolean mSkipSimPinFeatureEnabled = false;
 
     // For async handler to identify request type
     private static final int MSG_ENABLE_ICC_PIN_COMPLETE = 100;
@@ -174,6 +180,14 @@ public class IccLockSettings extends PreferenceActivity
 
         mPinDialog = (EditPinPreference) findPreference(PIN_DIALOG);
         mPinToggle = (SwitchPreference) findPreference(PIN_TOGGLE);
+        mUnlockToggle = (Preference) findPreference(SIM_UNLOCK_TOGGLE);
+
+        mSkipSimPinFeatureEnabled = getResources().getBoolean(com.android.internal.R.bool.config_imc_feature_skip_sim_pin);
+        if (!mSkipSimPinFeatureEnabled) {
+            getPreferenceScreen().removePreference(mUnlockToggle);
+            mUnlockToggle = null;
+        }
+
         if (savedInstanceState != null && savedInstanceState.containsKey(DIALOG_STATE)) {
             mDialogState = savedInstanceState.getInt(DIALOG_STATE);
             mPin = savedInstanceState.getString(DIALOG_PIN);
@@ -232,6 +246,45 @@ public class IccLockSettings extends PreferenceActivity
         updatePreferences();
     }
 
+    private void updateUnLockToggle() {
+        switch (getSimState()) {
+            case TelephonyManager.SIM_STATE_ABSENT:
+                boolean isSimOff = false;
+                if (mPhone != null) {
+                    isSimOff = mPhone.isSimOff();
+                }
+                if (isSimOff) {
+                    mUnlockToggle.setTitle(R.string.sim_off);
+                    mUnlockToggle.setEnabled(true);
+                    mUnlockToggle.setSelectable(true);
+                } else {
+                    mUnlockToggle.setTitle(R.string.sim_absent);
+                    mUnlockToggle.setEnabled(false);
+                    mUnlockToggle.setSelectable(false);
+                }
+                mUnlockToggle.setSummary(null);
+            break;
+            case TelephonyManager.SIM_STATE_PUK_REQUIRED:
+                mUnlockToggle.setTitle(R.string.sim_unlock_puk_toggle);
+                mUnlockToggle.setSummary(R.string.sim_puk_lock_on);
+                mUnlockToggle.setEnabled(true);
+                mUnlockToggle.setSelectable(true);
+            break;
+            case TelephonyManager.SIM_STATE_PIN_REQUIRED:
+                mUnlockToggle.setTitle(R.string.sim_unlock_pin_toggle);
+                mUnlockToggle.setSummary(R.string.sim_pin_lock_on);
+                mUnlockToggle.setEnabled(true);
+                mUnlockToggle.setSelectable(true);
+            break;
+            default:
+                mUnlockToggle.setTitle(R.string.sim_unlocked);
+                mUnlockToggle.setSummary(null);
+                mUnlockToggle.setEnabled(false);
+                mUnlockToggle.setSelectable(false);
+            break;
+        }
+    }
+
     private void updatePreferences() {
         mPinDialog.setEnabled(mPhone != null);
         mPinToggle.setEnabled(mPhone != null);
@@ -239,11 +292,48 @@ public class IccLockSettings extends PreferenceActivity
         if (mPhone != null) {
             mPinToggle.setChecked(mPhone.getIccCard().getIccLockEnabled());
         }
+
+        if (mSkipSimPinFeatureEnabled) {
+            updateUnLockToggle();
+        }
+    }
+
+    private int getSimState() {
+        int state = TelephonyManager.SIM_STATE_UNKNOWN;
+
+        if (mPhone != null) {
+            IccCard icc = mPhone.getIccCard();
+            if (icc != null) {
+                state = icc.getState().ordinal();
+            } else {
+                Log.e(TAG, "getSimState() - mPhone.getIccCard() is null");
+            }
+        } else {
+            Log.e(TAG, "getSimState() - mPhone is null");
+        }
+
+        return state;
+    }
+
+    private boolean isSimState(int state) {
+        return state == getSimState();
+    }
+
+    private boolean isPukLocked() {
+        return isSimState(TelephonyManager.SIM_STATE_PUK_REQUIRED);
+    }
+
+    private boolean isPinLocked() {
+        return isSimState(TelephonyManager.SIM_STATE_PIN_REQUIRED);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (mSkipSimPinFeatureEnabled) {
+            updatePreferences();
+        }
 
         // ACTION_SIM_STATE_CHANGED is sticky, so we'll receive current state after this call,
         // which will call updatePreferences().
@@ -392,6 +482,12 @@ public class IccLockSettings extends PreferenceActivity
         } else if (preference == mPinDialog) {
             mDialogState = ICC_OLD_MODE;
             return false;
+        } else if (preference == mUnlockToggle) {
+            if (isPukLocked()) {
+                showUnlockDialog(TelephonyManager.SIM_STATE_PUK_REQUIRED);
+            } else if (isPinLocked()) {
+                showUnlockDialog(TelephonyManager.SIM_STATE_PIN_REQUIRED);
+            }
         }
         return true;
     }
@@ -493,5 +589,34 @@ public class IccLockSettings extends PreferenceActivity
     private TabSpec buildTabSpec(String tag, String title) {
         return mTabHost.newTabSpec(tag).setIndicator(title).setContent(
                 mEmptyTabContent);
+    }
+
+    private void showUnlockDialog(int type) {
+        if (DBG) Log.d(TAG, "Enter showUnlockDialog type=" + type);
+        if (mPhone == null) {
+            Log.e(TAG, "mPhone is null");
+            return;
+        }
+
+        int subId = mPhone.getSubId();
+        if (DBG) Log.d(TAG, "subId=" + subId);
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            Log.e(TAG, "invalid subId:" + subId);
+            return;
+        }
+
+        int slotId = SubscriptionManager.getSlotId(subId);
+        if (DBG) Log.d(TAG, "slotId=" + slotId);
+        if (!SubscriptionManager.isValidSlotId(slotId)) {
+            Log.e(TAG, "invalid slotId:" + slotId);
+            return;
+        }
+
+        Intent intent = new Intent(TelephonyIntents.ACTION_SHOW_PIN_PUK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent. FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        intent.putExtra("type", type);
+        intent.putExtra(PhoneConstants.SLOT_KEY, slotId);
+        startActivity(intent);
     }
 }
