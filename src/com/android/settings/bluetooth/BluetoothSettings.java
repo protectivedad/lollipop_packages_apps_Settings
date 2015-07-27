@@ -343,7 +343,7 @@ public final class BluetoothSettings extends DeviceListPreferenceFragment implem
                 if (mInitiateDiscoverable) {
                     // Make the device visible to other devices.
                     mLocalAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
-                    mInitiateDiscoverable = false;
+                    //mInitiateDiscoverable = false;
                 }
                 return; // not break
 
