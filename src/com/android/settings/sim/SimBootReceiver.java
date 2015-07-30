@@ -24,8 +24,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
@@ -33,35 +31,37 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
+import com.android.internal.telephony.TelephonyIntents;
 
 import com.android.settings.Utils;
+import android.util.Log;
 
 import java.util.List;
 
 public class SimBootReceiver extends BroadcastReceiver {
     private static final String TAG = "SimBootReceiver";
-    private static final int SLOT_EMPTY = -1;
     private static final int NOTIFICATION_ID = 1;
-    private static final String SHARED_PREFERENCES_NAME = "sim_state";
-    private static final String SLOT_PREFIX = "sim_slot_";
     private static final int NOTIFICATION_ID_SIM_DISABLED = 2;
 
-    private SharedPreferences mSharedPreferences = null;
     private TelephonyManager mTelephonyManager;
     private Context mContext;
     private SubscriptionManager mSubscriptionManager;
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.d(TAG, "onReceive " + intent);
+        String action = intent.getAction();
+
         mTelephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         mContext = context;
         mSubscriptionManager = SubscriptionManager.from(mContext);
-        mSharedPreferences = mContext.getSharedPreferences(SHARED_PREFERENCES_NAME,
-                Context.MODE_PRIVATE);
-
-        mSubscriptionManager.addOnSubscriptionsChangedListener(mSubscriptionListener);
-        if(anySimDisabled()) {
-            createSimDisabledNotification(mContext);
+        if(Intent.ACTION_BOOT_COMPLETED.equals(action)) {
+            mSubscriptionManager.addOnSubscriptionsChangedListener(mSubscriptionListener);
+            if(anySimDisabled()) {
+                createSimDisabledNotification(mContext);
+            }
+        } else if(TelephonyIntents.ACTION_SUBINFO_RECORD_UPDATED.equals(action)) {
+            detectChangeAndNotify();
         }
     }
 
@@ -105,49 +105,26 @@ public class SimBootReceiver extends BroadcastReceiver {
                 return;
             }
 
-        for (int i = 0; i < numSlots; i++) {
-            final SubscriptionInfo sir = Utils.findRecordBySlotId(mContext, i);
-            final String key = SLOT_PREFIX+i;
-            final int lastSubId = getLastSubId(key);
+            // Create a notification to tell the user that some defaults are missing
+            createNotification(mContext);
 
-            if (sir != null) {
-                numSIMsDetected++;
-                final int currentSubId = sir.getSubscriptionId();
-                if (lastSubId != currentSubId) {
-                    createNotification(mContext);
-                    setLastSubId(key, currentSubId);
-                    notificationSent = true;
-                }
-                lastSIMSlotDetected = i;
-            } else if (lastSubId != SLOT_EMPTY) {
-                createNotification(mContext);
-                setLastSubId(key, SLOT_EMPTY);
-                notificationSent = true;
-            }
-        }
-
-        if (notificationSent) {
-            Intent intent = new Intent(mContext, SimDialogActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            if (numSIMsDetected == 1) {
+            if (sil.size() == 1) {
+                // If there is only one subscription, ask if user wants to use if for everything
+                Intent intent = new Intent(mContext, SimDialogActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra(SimDialogActivity.DIALOG_TYPE_KEY, SimDialogActivity.PREFERRED_PICK);
-                intent.putExtra(SimDialogActivity.PREFERRED_SIM, lastSIMSlotDetected);
-            } else {
+                intent.putExtra(SimDialogActivity.PREFERRED_SIM, sil.get(0).getSimSlotIndex());
+                mContext.startActivity(intent);
+            } else if (!dataSelected) {
+                // TODO(sanketpadawe): This should not be shown if the user is looking at the
+                // SimSettings page - its just annoying
+                // If there are mulitple, ensure they pick default data
+                Intent intent = new Intent(mContext, SimDialogActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra(SimDialogActivity.DIALOG_TYPE_KEY, SimDialogActivity.DEFAULT_DATA_PICK);
+                mContext.startActivity(intent);
             }
-            mContext.startActivity(intent);
         }
-    }
-	}
-
-    private int getLastSubId(String strSlotId) {
-        return mSharedPreferences.getInt(strSlotId, SLOT_EMPTY);
-    }
-
-    private void setLastSubId(String strSlotId, int value) {
-        Editor editor = mSharedPreferences.edit();
-        editor.putInt(strSlotId, value);
-        editor.commit();
     }
 
     private void createNotification(Context context){
@@ -184,7 +161,7 @@ public class SimBootReceiver extends BroadcastReceiver {
             new OnSubscriptionsChangedListener() {
         @Override
         public void onSubscriptionsChanged() {
-            detectChangeAndNotify();
+            //detectChangeAndNotify();
         }
     };
     private void createSimDisabledNotification(Context context) {
