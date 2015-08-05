@@ -52,9 +52,6 @@ public class SimBootReceiver extends BroadcastReceiver {
         Log.d(TAG, "onReceive " + intent);
         String action = intent.getAction();
 
-        if (Utils.isWifiOnly(context)) {
-            return;
-        }
         mTelephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         mContext = context;
         mSubscriptionManager = SubscriptionManager.from(mContext);
