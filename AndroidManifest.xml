@@ -2127,9 +2127,6 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"></action>
             </intent-filter>
-            <intent-filter>
-                 <action android:name="android.intent.action.ACTION_SUBINFO_RECORD_UPDATED" />
-            </intent-filter>
         </receiver>
 
         <provider

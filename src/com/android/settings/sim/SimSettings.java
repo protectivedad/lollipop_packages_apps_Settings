@@ -329,7 +329,7 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         // FIXME: b/18385348, needs to handle null from getActiveSubscriptionInfoList
         if (DBG) log("[onResme] mSubInfoList=" + mSubInfoList);
 
-        //updateAvailableSubInfos();
+        updateAvailableSubInfos();
 
         if (getActivity() != null) {
             final IntentFilter filter = new IntentFilter(TelephonyIntents.ACTION_SIM_STATE_CHANGED);
@@ -340,7 +340,6 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             getActivity().registerReceiver(mReceiver, filter);
         }
 
-        updatePreferences();
         updateAllOptions();
     }
 
@@ -836,7 +835,8 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (DBG) log("receive action=" + action);
-            if (TelephonyIntents.ACTION_SUBINFO_RECORD_UPDATED.equals(action)
+            if (TelephonyIntents.ACTION_SIM_STATE_CHANGED.equals(action)
+                    || TelephonyIntents.ACTION_SUBINFO_RECORD_UPDATED.equals(action)
                     || TelephonyIntents.ACTION_SUBINFO_CONTENT_CHANGE.equals(action)) {
                 mHandler.removeMessages(MESSAGE_UPDATE_VIEW);
                 mHandler.sendEmptyMessage(MESSAGE_UPDATE_VIEW);
