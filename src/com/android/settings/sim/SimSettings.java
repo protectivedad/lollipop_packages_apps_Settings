@@ -38,7 +38,6 @@ import android.os.Message;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceScreen;
-import android.preference.SwitchPreference;
 import android.provider.SearchIndexableResource;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
@@ -53,14 +52,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import com.android.settings.RestrictedSettingsFragment;
@@ -70,7 +65,6 @@ import com.android.settings.search.Indexable;
 import com.android.settings.R;
 
 import com.android.internal.telephony.TelephonyIntents;
-import com.android.internal.telephony.ProxyController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -171,7 +165,6 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         createPreferences();
 
         SimBootReceiver.cancelNotification(getActivity());
-        SimBootReceiver.cancelSimDisabledNotification(getActivity());
     }
 
     private void createPreferences() {
@@ -446,16 +439,13 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         return true;
     }
 
-    private class SimPreference extends Preference implements
-            DialogInterface.OnClickListener, DialogInterface.OnCancelListener,
-            OnCheckedChangeListener, View.OnClickListener {
+    private class SimPreference extends Preference{
         private SubscriptionInfo mSubInfoRecord;
         private int mSlotId;
         private int[] mTintArr;
         Context mContext;
         private String[] mColorStrings;
         private int mTintSelectorPos;
-        private Switch mSwitcher;
 
         public SimPreference(Context context, SubscriptionInfo subInfoRecord, int slotId) {
             super(context);
@@ -468,22 +458,6 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             mTintArr = context.getResources().getIntArray(com.android.internal.R.array.sim_colors);
             mColorStrings = context.getResources().getStringArray(R.array.color_picker);
             mTintSelectorPos = 0;
-            setWidgetLayoutResource(R.layout.switcher);
-        }
-
-        protected void onBindView(final View view) {
-            super.onBindView(view);
-            boolean simOnOffAllowed = mContext.getResources().getBoolean(
-                    com.android.internal.R.bool.config_sim_onoff_allowed);
-            mSwitcher = (Switch) view.findViewById(R.id.switcher);
-            if (simOnOffAllowed && mSwitcher != null) {
-                mSwitcher.setChecked(isSimEnabled(mSlotId));
-                mSwitcher.setOnClickListener(this);
-                mSwitcher.setOnCheckedChangeListener(this);
-            } else {
-                mSwitcher.setVisibility(View.GONE);
-                mSwitcher = null;
-            }
         }
 
         public void update() {
@@ -501,9 +475,9 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
                 }
                 setIcon(new BitmapDrawable(res, (mSubInfoRecord.createIconBitmap(mContext))));
             } else {
-                setSummary(!isSimEnabled(mSlotId) ? R.string.sim_slot_disabled : R.string.sim_slot_empty);
+                setSummary(R.string.sim_slot_empty);
                 setFragment(null);
-                setEnabled(true);
+                setEnabled(false);
             }
         }
 
@@ -512,7 +486,6 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
         }
 
         public void createEditDialog(SimPreference simPref) {
-            if (mSubInfoRecord == null) return;
             final Resources res = getResources();
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -670,74 +643,6 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
             }
         }
 
-        @Override
-        public void onClick(View v) {
-            Log.d(TAG, "onClick " + v);
-        }
-
-        @Override
-        public void onClick(DialogInterface dialog, int which) {
-            if (which == DialogInterface.BUTTON_POSITIVE) {
-                setSimEnabled(mSlotId, false);
-            } else {
-                restoreSwitcher();
-            }
-        }
-
-        @Override
-        public void onCancel(DialogInterface dialog) {
-            restoreSwitcher();
-        }
-
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView,
-                boolean isChecked) {
-            if (buttonView == mSwitcher) {
-                final boolean checked = isChecked;
-                Log.d(TAG, "switch to " + isChecked + "," + mSwitcher.isChecked());
-                if (checked == false) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setTitle(android.R.string.dialog_alert_title)
-                            .setMessage(R.string.sim_slot_disable_warning)
-                            .setCancelable(true)
-                            .setPositiveButton(android.R.string.ok, this)
-                            .setNegativeButton(android.R.string.cancel, this)
-                            .setOnCancelListener(this);
-
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
-                } else {
-                    setSimEnabled(mSlotId, checked);
-                }
-            }
-        }
-
-        private void restoreSwitcher() {
-            if (mSwitcher != null) mSwitcher.setChecked(true);
-        }
-
-        private void setSimEnabled(int slotId, boolean enable) {
-            final TelephonyManager tm =
-                    (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-            if (isSimEnabled(slotId) != enable) {
-                if (enable) {
-                    Toast.makeText(mContext,
-                            R.string.sim_slot_enable_onging_notify,
-                            Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(mContext,
-                            R.string.sim_slot_disable_onging_notify,
-                            Toast.LENGTH_LONG).show();
-                }
-                tm.setSimOff(slotId, !enable);
-            }
-        }
-
-        private boolean isSimEnabled(int slotId) {
-            final TelephonyManager tm =
-                    (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-            return !(tm.isSimOff(slotId));
-        }
 
     }
 
