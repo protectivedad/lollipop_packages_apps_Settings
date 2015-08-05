@@ -1098,7 +1098,6 @@
         <activity android:name="IccLockSettings"
                 android:label="@string/sim_lock_settings"
                 android:theme="@style/Theme.SubSettingsDialogWhenLarge"
-                android:configChanges="mnc|mcc"
                 android:process="com.android.phone">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

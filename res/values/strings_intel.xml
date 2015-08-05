@@ -38,14 +38,4 @@
     <string name="limit_animation">No animation transaction</string>
     <string name="limit_animation_summary">Window animation transaction will be disabled</string>
     <string name="power_save_tips">Tips</string>
-
-    <!-- unlock sim pin strings -->
-    <string name="sim_absent">No SIM inserted</string>
-    <string name="sim_off">SIM is off</string>
-    <string name="sim_unlocked">SIM is unlocked</string>
-    <string name="sim_unlock_puk_toggle">"Unlock PIN"</string>
-    <string name="sim_puk_lock_on">"Click to input PUK"</string>
-    <string name="sim_unlock_pin_toggle">"Unlock SIM"</string>
-    <string name="sim_pin_lock_on">"Click to input PIN"</string>
-
 </resources>
