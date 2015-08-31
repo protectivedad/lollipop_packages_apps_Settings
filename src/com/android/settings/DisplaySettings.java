@@ -85,6 +85,8 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
     private static final String KEY_DOZE = "doze";
     private static final String KEY_AUTO_BRIGHTNESS = "auto_brightness";
     private static final String KEY_AUTO_ROTATE = "auto_rotate";
+   //$_rbox_$_modify_$_by huangjc 
+    private static final String KEY_MULTI_WINDOW = "multi_window";
 
     private static final int DLG_GLOBAL_CHANGE_WARNING = 1;
 
@@ -110,6 +112,9 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
     private SwitchPreference mAutoBrightnessPreference;
     private SwitchPreference mButtonLightsPreference;
     private ListPreference mButtonLightsTimeoutPreference;
+    //$_rbox_$_modify_$_by huangjc 
+    private SwitchPreference mMultiWindowPreference;
+     
     private ListPreference	mMainModeList;
 	private ListPreference	mAuxDisplay;
     private ListPreference	mAuxModeList;
@@ -240,6 +245,12 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         } else {
             removePreference(KEY_AUTO_ROTATE);
         }
+               if(isTablet){
+                 mMultiWindowPreference = (SwitchPreference) findPreference(KEY_MULTI_WINDOW);
+                 mMultiWindowPreference.setOnPreferenceChangeListener(this);
+                }else{
+                 removePreference(KEY_MULTI_WINDOW);
+                }
 		//$_rbox_$_modify_$_begin
 		mMainDisplay = (ListPreference) findPreference(KEY_MAIN_DISPLAY_INTERFACE);
 		mMainModeList = (ListPreference) findPreference(KEY_MAIN_DISPLAY_MODE);
@@ -816,6 +827,13 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
             int value = Settings.Secure.getInt(getContentResolver(), DOZE_ENABLED, 1);
             mDozePreference.setChecked(value != 0);
         }
+        
+        // Update multi window state if it is available.
+        if (mMultiWindowPreference != null) {
+            int enableconfig = Settings.System.getInt(getContentResolver(),
+                    Settings.System.MULTI_WINDOW_CONFIG, 0);
+            mMultiWindowPreference.setChecked(enableconfig != 0);
+        }
     }
 
     private void updateScreenSaverSummary() {
@@ -877,6 +895,11 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
             boolean value = (Boolean) objValue;
             Settings.Secure.putInt(getContentResolver(), DOZE_ENABLED, value ? 1 : 0);
         }
+       //$_rbox_$_modify_$_by huangjc 
+        if (preference == mMultiWindowPreference) {
+            boolean value = (Boolean) objValue;
+            Settings.System.putInt(getContentResolver(), Settings.System.MULTI_WINDOW_CONFIG, value ? 1 : 0);
+        }        
   //$_rbox_$_modify_$_hhq: move screensetting
         //$_rbox_$_modify_$_begin
 		if ( key.equals(KEY_MAIN_DISPLAY_INTERFACE) ) {

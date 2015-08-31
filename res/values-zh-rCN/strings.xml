@@ -2684,7 +2684,11 @@
     <string name="screen_control_cancel_title">还原</string>
     <string name="screenscale">屏幕缩放</string>
     <!-- $_rbox_$_modify_$_zhengyang: end for screen settings -->
-    
+  
+   <!--$_rbox_$_modify_$_by huangjc -->
+     <string name="multi_window_title">多窗口</string>
+     <string name="multi_window_summary">开关多窗口功能</string>
+    <!--$_rbox_$_modify_$_end -->    
    <!-- $_rbox_$_modify_$_by cx -->
      <string name="nand_flash_eject">卸载 Nand Flash</string>
      <string name="nand_flash_eject_summary">卸载内部 nand flash 存储</string>

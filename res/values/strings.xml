@@ -6221,6 +6221,10 @@
     <string name="screenscale">Screen Scale</string>
     <!-- $_rbox_$_modify_$_zhengyang: end for screen settings -->
      
+     <!--$_rbox_$_modify_$_by huangjc -->
+     <string name="multi_window_title">Multi Window</string>
+     <string name="multi_window_summary">open/close the function of Multi Window</string>
+     <!--$_rbox_$_modify_$_end -->
      <!--$_rbox_$_modify_$_by cx -->
      <string name="nand_flash_eject">Unmount Nand Flash</string>
      <string name="nand_flash_eject_summary">Unmount the internal nand flash storage</string>
