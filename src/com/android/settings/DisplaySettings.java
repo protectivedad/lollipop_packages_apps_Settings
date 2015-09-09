@@ -136,6 +136,7 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
     private boolean mUserSet=false;
     boolean first=true;
     private boolean isTablet;
+    private boolean enableMulti;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -145,6 +146,7 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         addPreferencesFromResource(R.xml.display_settings);
 	//$_rbox_$_modify_by lly$_begin
         isTablet = "tablet".equals(SystemProperties.get("ro.target.product", "tablet"));
+        enableMulti = "rk3288".equals(SystemProperties.get("ro.board.platform", "tablet"));
 	//$_rbox_$_modify_by lly$_end
         
 	mScreenSaverPreference = findPreference(KEY_SCREEN_SAVER);
@@ -245,7 +247,7 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         } else {
             removePreference(KEY_AUTO_ROTATE);
         }
-               if(isTablet){
+               if(isTablet&&enableMulti){
                  mMultiWindowPreference = (SwitchPreference) findPreference(KEY_MULTI_WINDOW);
                  mMultiWindowPreference.setOnPreferenceChangeListener(this);
                 }else{
