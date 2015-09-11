@@ -52,7 +52,7 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 	private static final int MINIMUN_SCREEN_SCALE = 0;
 	private static final int MAXIMUN_SCREEN_SCALE = 20;
 
-	private File HdmiScale = new File("/sys/class/graphics/fb0/scale");
+	private File HdmiScale; 
 	private File DualModeFile = new File("/sys/class/graphics/fb0/dual_mode");
 	private SeekBar mSeekBar;
 	private int mOldScale = 0;
@@ -82,25 +82,25 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 		
 		if (mDisplayManagement != null &&
 		    mDisplayManagement.getDisplayNumber() == 0)
-			mDisplayManagement = null;			
+			mDisplayManagement = null;		
 	}
 
 	protected void setHdmiScreenScale(File file, int value) {
-		if (mDisplayManagement == null || value < 0){
+		//if (mDisplayManagement == null || value < 0){
 			//if (!isHdmiConnected(HdmiState)) {
 			//	return;
 			//}
-			if (dualMode == 1) {
-				SystemProperties.set("sys.hdmi_screen.scale",
-						String.valueOf((char) value));
-			} else {
-				SystemProperties.set("sys.hdmi_screen.scale",
-						String.valueOf((char) 100));
-			}
-		}else {
+			// if (dualMode == 1) {
+				// SystemProperties.set("sys.hdmi_screen.scale",
+						// String.valueOf((char) value));
+			// } else {
+				//SystemProperties.set("sys.hdmi_screen.scale",
+				//		String.valueOf((char) 100));
+			//}
+		//}else {
 			HdmiScaleTask hdmiScaleTask=new HdmiScaleTask();
 			hdmiScaleTask.execute(value);
-		}
+		//}
 
 	}
 
@@ -133,6 +133,12 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 	@Override
 	protected void onBindDialogView(View view) {
 		super.onBindDialogView(view);
+		
+		if(isRK3128()){
+		   HdmiScale = new File("/sys/class/display/HDMI/scale");//3128使用	
+		}else{
+		   HdmiScale = new File("/sys/class/graphics/fb0/scale");
+		}
 
 		mFlag = false;
 		mSeekBar = getSeekBar(view);
@@ -255,5 +261,23 @@ public class HdmiScreenZoomPreference extends SeekBarDialogPreference implements
 		}
 		
 	}
+	
+	private boolean isRK3128() {
+    	final String RK3128 = "RK3128";
+	try{
+	   FileReader fr = new FileReader("/proc/cpuinfo");
+           BufferedReader br = new BufferedReader(fr);
+           String str;
+           while((str = br.readLine()) != null) {
+        	if (str.contains(RK3128)) {
+		    return true;
+		}
+           }	
+	}catch(Exception e){
+		return false;
+	}
+        return false;
+    }
+
 	
 }
