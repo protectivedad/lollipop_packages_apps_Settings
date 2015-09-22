@@ -28,7 +28,7 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
 import static android.provider.Settings.System.SCREEN_OFF_TIMEOUT;
-
+import android.app.IActivityManager;
 import android.app.Activity;
 import android.app.ActivityManagerNative;
 import android.app.Dialog;
@@ -146,7 +146,7 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         addPreferencesFromResource(R.xml.display_settings);
 	//$_rbox_$_modify_by lly$_begin
         isTablet = "tablet".equals(SystemProperties.get("ro.target.product", "tablet"));
-        enableMulti = "rk3288".equals(SystemProperties.get("ro.board.platform", "tablet"));
+        enableMulti = "rk3288".equals(SystemProperties.get("ro.board.platform", "unknow")) || "rk3368".equals(SystemProperties.get("ro.board.platform", "unknow"));
 	//$_rbox_$_modify_by lly$_end
         
 	mScreenSaverPreference = findPreference(KEY_SCREEN_SAVER);
@@ -164,7 +164,7 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         disableUnusableTimeouts(mScreenTimeoutPreference);
         updateTimeoutPreferenceDescription(currentTimeout);
 
-        mFontSizePref = (WarnedListPreference) findPreference(KEY_FONT_SIZE);
+       mFontSizePref = (WarnedListPreference) findPreference(KEY_FONT_SIZE);
         mFontSizePref.setOnPreferenceChangeListener(this);
         mFontSizePref.setOnPreferenceClickListener(this);
 
@@ -247,12 +247,16 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
         } else {
             removePreference(KEY_AUTO_ROTATE);
         }
-               if(isTablet&&enableMulti){
+              
+	IActivityManager am = ActivityManagerNative.getDefault();
+	try{
+               if(enableMulti && am.getEnableMulWindow()){
                  mMultiWindowPreference = (SwitchPreference) findPreference(KEY_MULTI_WINDOW);
                  mMultiWindowPreference.setOnPreferenceChangeListener(this);
                 }else{
                  removePreference(KEY_MULTI_WINDOW);
                 }
+	}catch(RemoteException e){}
 		//$_rbox_$_modify_$_begin
 		mMainDisplay = (ListPreference) findPreference(KEY_MAIN_DISPLAY_INTERFACE);
 		mMainModeList = (ListPreference) findPreference(KEY_MAIN_DISPLAY_MODE);
