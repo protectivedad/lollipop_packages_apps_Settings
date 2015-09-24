@@ -113,6 +113,12 @@
                android:targetPackage="com.android.settings"
                android:targetClass="com.android.settings.screen.ScreenScaleActivity" />
         </Preference>
+		<!-- add by wgh-->
+		<PreferenceScreen
+                android:key="dualscreen"
+                android:title="@string/dualscreen_setting"
+                android:fragment="com.android.settings.dualscreen.DualscreenSettings" />
+		
         <ListPreference
                 android:key="main_screen_interface"/>
 

@@ -115,6 +115,7 @@ import com.android.settings.wifi.p2p.WifiP2pSettings;
 import com.android.settings.HdmiSettings;
 import com.android.settings.ScreenshotSetting;
 import com.android.settings.UsbSetting;
+import com.android.settings.dualscreen.DualscreenSettings;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -312,7 +313,8 @@ public class SettingsActivity extends Activity
             ApnSettings.class.getName(),
             HdmiSettings.class.getName(),
             ScreenshotSetting.class.getName(),
-            UsbSetting.class.getName()
+            UsbSetting.class.getName(),
+            DualscreenSettings.class.getName()
     };
 
 
