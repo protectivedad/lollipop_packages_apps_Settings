@@ -6079,14 +6079,6 @@
      <string name="screenshot_storage_title">Set the location of screenshot storage</string>
      <string name="later">s later capture</string>
 
-	<!-- dual screen but different contents-->
-	<string name="dualscreen_setting">Dual-Screen</string>
-	<string name="dualscreen_manual">Dual-Screen Manual</string>
-	<string name="dualscreen_settings_title">Dual screen</string>
-	<string name="dualscreen_manual_summary">"When this feature is turned on,If the pad have connected to the HDMI,you can run different applications in pad and TV two screens,for example, you can play video on TV, and run other applications on pad.
-	    \n\nThe switching of two display mode:\n <ul>\nShow different content on two screen:\n    Touch screen on the left side of the 50 pixel region and fast slide to the right or touch screen on the right side of the 50 pixel region and fast slide to the left, the focus application window will only display  on TV, and the pad can operate other applications.
-	    \n\nShow same content on two screen:\n    There is a simultaneous button on the status bar (right of the recently application icon), click on the button to make the two screen display the same content.</ul>"</string>
- 	
      <!-- ethernet settings by blb-->
      <string name="ethernet_settings">Ethernet</string>
      <string name="ethernet_connect">Connect</string>
