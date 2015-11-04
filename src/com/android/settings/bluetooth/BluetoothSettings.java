@@ -352,6 +352,7 @@ public final class BluetoothSettings extends DeviceListPreferenceFragment implem
                 break;
 
             case BluetoothAdapter.STATE_OFF:
+		mInitiateDiscoverable = true;
                 messageId = R.string.bluetooth_empty_list_bluetooth_off;
                 if (isUiRestricted()) {
                     messageId = R.string.bluetooth_empty_list_user_restricted;
