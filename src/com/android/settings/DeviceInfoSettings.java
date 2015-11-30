@@ -156,6 +156,7 @@ public class DeviceInfoSettings extends SettingsPreferenceFragment implements In
         Utils.updatePreferenceToSpecificActivityOrRemove(act, parentPreference, KEY_WEBVIEW_LICENSE,
                 Utils.UPDATE_PREFERENCE_FLAG_SET_TITLE_TO_MATCHING_ACTIVITY);
 
+        getPreferenceScreen().removePreference(findPreference(KEY_BASEBAND_VERSION));
         // These are contained by the root preference screen
         parentPreference = getPreferenceScreen();
         if (UserHandle.myUserId() == UserHandle.USER_OWNER) {
