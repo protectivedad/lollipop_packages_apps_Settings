@@ -47,10 +47,12 @@
         android:key="tether_settings"
         android:title="@string/tether_settings_title_all" />
     
+    <!--
     <PreferenceScreen
         android:fragment="com.android.settings.EthernetSettings"
         android:key="ethernet_settings"
         android:title="@string/ethernet_settings_title" /> 
+    -->
     <!--$_rbox_$_modify_$_chenzhi_20120309-->
 <!--$_rbox_$_modify_$_begin-->
     <PreferenceScreen
