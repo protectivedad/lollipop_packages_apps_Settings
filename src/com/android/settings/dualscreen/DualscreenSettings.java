@@ -58,6 +58,7 @@ import com.android.settings.SettingsActivity;
 import com.android.settings.SettingsPreferenceFragment;
 import com.android.settings.widget.SwitchBar;
 
+import android.os.SystemProperties;
 
 public class DualscreenSettings extends SettingsPreferenceFragment implements SwitchBar.OnSwitchChangeListener {
     private static final String TAG = DualscreenSettings.class.getSimpleName();
@@ -177,7 +178,7 @@ public class DualscreenSettings extends SettingsPreferenceFragment implements Sw
         public void onChange(boolean selfChange) {
             final boolean enable = (DUAL_SCREEN_CLOSE != getDualScreenValue());
 		Log.d(TAG, "onchagne enable=" + enable + ", selfChange=" + selfChange);
-			
+		SystemProperties.set("dualscreen_eable", enable ? "true" : "false");
 		try {
 	            IActivityManager am = ActivityManagerNative.getDefault();
 	            Configuration config = am.getConfiguration();
