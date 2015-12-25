@@ -1078,7 +1078,7 @@
     <string name="network_settings_title" msgid="4871233236744292831">"Mobile networks"</string>
     <string name="manage_mobile_plan_title" msgid="7630170375010107744">"Mobile plan"</string>
     <string name="sms_application_title" msgid="6134351177937015839">"Default SMS app"</string>
-    <string name="ethernet_settings_title" >"Ehernet"</string>
+    <string name="ethernet_settings_title" >"Ethernet"</string>
     <string name="sms_change_default_dialog_title" msgid="1958688831875804286">"Change SMS app?"</string>
     <string name="sms_change_default_dialog_text" msgid="1522783933230274787">"Use <xliff:g id="NEW_APP">%1$s</xliff:g> instead of <xliff:g id="CURRENT_APP">%2$s</xliff:g> as your SMS app?"</string>
     <string name="sms_change_default_no_previous_dialog_text" msgid="602683880284921998">"Use <xliff:g id="NEW_APP">%s</xliff:g> as your SMS app?"</string>

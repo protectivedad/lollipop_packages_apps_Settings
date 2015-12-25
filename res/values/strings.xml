@@ -2533,7 +2533,7 @@
     <!-- Tethering controls, item title to go into the tethering settings when USB, Bluetooth and Wifi tethering are available [CHAR LIMIT=25]-->
     <string name="tether_settings_title_all">Tethering &amp; portable hotspot</string>
     <!--Ethernet Settings -->
-    <string name="ethernet_settings_title" >"Ehernet"</string>
+    <string name="ethernet_settings_title" >Ethernet</string>
     <!-- USB Tethering options -->
     <string name="usb_title">USB</string>
     <string name="usb_tethering_button_text">USB tethering</string>
