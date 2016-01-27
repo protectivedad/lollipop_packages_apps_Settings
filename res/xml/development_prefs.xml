@@ -44,6 +44,13 @@
         android:entries="@array/hdcp_checking_titles"
         android:entryValues="@array/hdcp_checking_values" />
 
+    <ListPreference
+        android:key="fan_mode"
+        android:title="@string/fan_mode_title"
+        android:dialogTitle="@string/fan_mode_dialog_title"
+        android:entries="@array/fan_mode_titles"
+        android:entryValues="@array/fan_mode_values" />
+
     <SwitchPreference
         android:key="bt_hci_snoop_log"
         android:title="@string/bt_hci_snoop_log"

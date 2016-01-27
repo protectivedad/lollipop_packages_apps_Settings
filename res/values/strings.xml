@@ -4734,6 +4734,10 @@
     <!-- HDCP checking dialog title, used for debug purposes only. [CHAR LIMIT=25] -->
     <string name="hdcp_checking_dialog_title">Set HDCP checking behavior</string>
 
+    <!-- Fan settings -->
+    <string name="fan_mode_title">Cooling fan mode</string>
+    <string name="fan_mode_dialog_title">Set the working mode for cooling fan</string>
+
     <!-- Preference category for app debugging development settings. [CHAR LIMIT=50] -->
     <string name="debug_debugging_category">Debugging</string>
 
