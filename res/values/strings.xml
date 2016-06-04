@@ -6275,4 +6275,9 @@
     <string name="pick_ok">OK</string>
     <string name="pick_setting">Setting</string>
     <string name="sim_change_title">SIM card has been changed</string>
+    <!-- cooling fan -->
+    <string name="fan_settings">Cooling fan</string>
+    <string name="fan_always_off_title">Always Off Mode</string>
+    <string name="fan_always_on_title">Always On Mode</string>
+    <string name="fan_smartmode_title">Smart mode: detect the CPU temprerature and set automatically</string>
 </resources>
