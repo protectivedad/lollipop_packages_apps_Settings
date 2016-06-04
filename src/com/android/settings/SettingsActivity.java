@@ -1194,7 +1194,11 @@ public class SettingsActivity extends Activity
                     if (!mBatteryPresent || ("box".equals(SystemProperties.get("ro.target.product","tablet")))) {
                         removeTile = true;
                     }
-                } else if (id == R.id.home_settings) {
+                } else if(id == R.id.power_save_settings){
+                    if (!mBatteryPresent || ("box".equals(SystemProperties.get("ro.target.product","tablet")))) {
+                        removeTile = true;
+                    }
+		}else if (id == R.id.home_settings) {
                     if (!updateHomeSettingTiles(tile)) {
                         removeTile = true;
                     }
