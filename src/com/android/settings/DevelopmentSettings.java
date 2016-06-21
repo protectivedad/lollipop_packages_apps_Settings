@@ -23,7 +23,6 @@ import android.app.Dialog;
 import android.app.admin.DevicePolicyManager;
 import android.app.backup.IBackupManager;
 import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -72,14 +71,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.io.File;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 
 /*
  * Displays preferences for application developers.
@@ -178,10 +169,6 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
 
     private static String DEFAULT_LOG_RING_BUFFER_SIZE_IN_BYTES = "262144"; // 256K
 
-    private static final String FAN_MODE_KEY = "fan_mode";
-    private static final String FAN_MODE_PROPERTY = "persist.sys.fan_mode";
-    private static final String FAN_MODE_SYSFILE = "/sys/devices/fan.29/mode";
-
     private IWindowManager mWindowManager;
     private IBackupManager mBackupManager;
     private DevicePolicyManager mDpm;
@@ -262,13 +249,6 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
     private Dialog mAdbKeysDialog;
     private boolean mUnavailable;
     private boolean mHideBootCheck;
-
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            updateFanValues();
-        }
-    };
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -399,12 +379,6 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
         if (hdcpChecking != null) {
             mAllPrefs.add(hdcpChecking);
             removePreferenceForProduction(hdcpChecking);
-        }
-
-        Preference fanMode = findPreference(FAN_MODE_KEY);
-        if (fanMode != null) {
-            mAllPrefs.add(fanMode);
-            removePreferenceForProduction(fanMode);
         }
 
         mProcessStats = (PreferenceScreen) findPreference(PROCESS_STATS);
@@ -556,7 +530,6 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
         updateSwitchPreference(mDebugViewAttributes, Settings.Global.getInt(cr,
                 Settings.Global.DEBUG_VIEW_ATTRIBUTES, 0) != 0);
         updateHdcpValues();
-        updateFanValues();
         updatePasswordSummary();
         updateDebuggerOptions();
         updateStrictModeVisualOptions();
@@ -634,44 +607,6 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
             hdcpChecking.setValue(values[index]);
             hdcpChecking.setSummary(summaries[index]);
             hdcpChecking.setOnPreferenceChangeListener(this);
-        }
-    }
-
-    private void fanModeSet(File file, String mode) {
-        if ((file == null) || !file.exists())
-            return;
-
-        try {
-            FileOutputStream fout = new FileOutputStream(file);
-            PrintWriter pWriter = new PrintWriter(fout);
-            pWriter.println(mode);
-            pWriter.flush();
-            pWriter.close();
-            fout.close();
-        } catch (IOException e) {
-            Log.d("FAN", ": error = " + e);
-        }
-    }
-
-    private void updateFanValues() {
-        File mFanModeSysFile = null;
-        ListPreference fanChecking = (ListPreference) findPreference(FAN_MODE_KEY);
-        if (fanChecking != null) {
-            String[] values = getResources().getStringArray(R.array.fan_mode_values);
-            String[] summaries = getResources().getStringArray(R.array.fan_mode_summaries);
-            int index = SystemProperties.getInt(FAN_MODE_PROPERTY, 0);
-            //int index = 1;
-            //for (int i = 0; i < values.length; i++) {
-                //if (currentValue.equals(values[i])) {
-                    //index = i;
-                    //break;
-                //}
-            //}
-            mFanModeSysFile = new File(FAN_MODE_SYSFILE);
-            fanModeSet(mFanModeSysFile, values[index]);
-            fanChecking.setValue(values[index]);
-            fanChecking.setSummary(summaries[index]);
-            fanChecking.setOnPreferenceChangeListener(this);
         }
     }
 
@@ -1570,11 +1505,6 @@ public class DevelopmentSettings extends SettingsPreferenceFragment
         if (HDCP_CHECKING_KEY.equals(preference.getKey())) {
             SystemProperties.set(HDCP_CHECKING_PROPERTY, newValue.toString());
             updateHdcpValues();
-            pokeSystemProperties();
-            return true;
-        } else if (FAN_MODE_KEY.equals(preference.getKey())) {
-            SystemProperties.set(FAN_MODE_PROPERTY, newValue.toString());
-            updateFanValues();
             pokeSystemProperties();
             return true;
         } else if (preference == mLogdSize) {

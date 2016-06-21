@@ -955,27 +955,6 @@
         <item>Always use HDCP checking</item>
     </string-array>
 
-    <!-- Titles for Fan mode preference. [CHAR LIMIT=35] -->
-    <string-array name="fan_mode_titles">
-        <item>Always off</item>
-        <item>Always on</item>
-        <item>Smart mode: detect the CPU temprerature and set automatically</item>
-    </string-array>
-
-    <!-- Values for Fan mode preference. Need to match with the driver -->
-    <string-array name="fan_mode_values" translatable="false" >
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
-    <!-- Summaries for Fan mode preference. [CHAR LIMIT=100]-->
-    <string-array name="fan_mode_summaries" >
-        <item>Always off mode</item>
-        <item>Always on mode</item>
-        <item>Smart mode</item>
-    </string-array>
-
     <!-- Titles for window animation scale preference. [CHAR LIMIT=35] -->
     <string-array name="window_animation_scale_entries">
         <item>Animation off</item>
