@@ -116,7 +116,6 @@ import com.android.settings.HdmiSettings;
 import com.android.settings.ScreenshotSetting;
 import com.android.settings.UsbSetting;
 import com.android.settings.dualscreen.DualscreenSettings;
-import com.android.settings.FanSettings;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -315,7 +314,6 @@ public class SettingsActivity extends Activity
             HdmiSettings.class.getName(),
             ScreenshotSetting.class.getName(),
             UsbSetting.class.getName(),
-            FanSettings.class.getName(),
             DualscreenSettings.class.getName()
     };
 

@@ -173,12 +173,6 @@
                 android:title="@string/screenshot_manager"
                 android:fragment="com.android.settings.ScreenshotSetting"
                 android:icon="@drawable/capture" />
-        <!-- cooling fan  -->
-        <dashboard-tile
-                 android:id="@+id/fan_settings"
-                 android:title="@string/fan_settings"
-                 android:fragment="com.android.settings.FanSettings"
-                 android:icon="@drawable/ic_settings_fan" />
     </dashboard-category>
 
     <!-- PERSONAL -->
