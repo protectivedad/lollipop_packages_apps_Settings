@@ -2539,14 +2539,6 @@
     <string name="screenshot_version">截屏管理器版本</string>
     <string name="screenshot_storage_title">设置截屏图片存储位置</string>
     <string name="later">秒以后截屏</string>
-	
-	<!-- dual screen but different contents-->
-	<string name="dualscreen_setting">双屏显示</string>
-	<string name="dualscreen_manual">双屏显示手册</string>
-	<string name="dualscreen_settings_title">双屏显示</string>
-	<string name="dualscreen_manual_summary">"启用此功能，如果有连接hdmi，您可以在平板和电视两个屏幕上运行不同的应用，比如说您可以在电视上播放视频，而平板上运行其它应用程序。
-	    \n\n两屏显示模式切换:\n <ul>\n两屏显示不同内容:\n    手指触摸屏幕左边50个像素区域快速向右滑动或者触摸屏幕右边50个像素区域快速向左滑动，焦点应用窗口就只在电视上显示，而平板上可以操作其它的应用程序。
-	    \n\n两屏显示相同内容:\n    状态栏上有一个同步的按钮(在最近打开应用程序图标的右边)，点击按钮即可让两屏显示相同内容。</ul>"</string>
 
       <!-- ethernet settings by blb-->
      <string name="ethernet_settings">以太网</string>
