@@ -1362,18 +1362,6 @@
       <item>StaticIP</item>
       <item>DHCP</item>
    </string-array>
-<!--$_rbox_$_modify_$_chenzhi_20120309: add for pppoe-->
-<!--$_rbox_$_modify_$_begin-->
-    <string-array name="entries_pppoe_phy_iface" translatable="false">
-        <item>Ethernet</item>
-        <item>WiFi</item>
-    </string-array>
-
-    <string-array name="entryvalues_pppoe_phy_iface" translatable="false">
-        <item>ethernet</item>
-        <item>wifi</item>
-    </string-array>
-<!--$_rbox_$_modify_$_end-->
 
     <string-array name="button_lights_timeout_entries">
         <item>1.5 seconds</item>
