@@ -353,7 +353,6 @@ public class SettingsPreferenceFragment extends PreferenceFragment implements Di
         }
         mDialogFragment = new SettingsDialogFragment(this, dialogId);
         mDialogFragment.show(getChildFragmentManager(), Integer.toString(dialogId));
-        Log.e("blb","----------------------------------------------------------------------------------"+getChildFragmentManager());
     }
 
     public Dialog onCreateDialog(int dialogId) {

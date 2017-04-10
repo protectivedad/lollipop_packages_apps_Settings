@@ -1569,7 +1569,6 @@
     <string name="wifi_ip_address">IP address</string>
     <!-- Hint text for the IP address -->
     <string name="wifi_ip_address_hint" translatable="false">192.168.1.128</string>
-    <string name="ethernet_netmask_hint" translatable="false"> 255.255.255.0</string>
     <!-- Label for the EAP method of the network -->
     <string name="wifi_eap_method">EAP method</string>
     <!-- Label for the phase2 -->
@@ -2532,8 +2531,6 @@
     <string name="tether_settings_title_usb_bluetooth">Tethering</string>
     <!-- Tethering controls, item title to go into the tethering settings when USB, Bluetooth and Wifi tethering are available [CHAR LIMIT=25]-->
     <string name="tether_settings_title_all">Tethering &amp; portable hotspot</string>
-    <!--Ethernet Settings -->
-    <string name="ethernet_settings_title" >Ethernet</string>
     <!-- USB Tethering options -->
     <string name="usb_title">USB</string>
     <string name="usb_tethering_button_text">USB tethering</string>
@@ -6120,7 +6117,6 @@
      <string name="ethernet_quick_toggle_summary_on">Ethernet is enabled</string>
      <!--Used as title on second screen after selecting Ethernet settings -->
      <string name="ethernet_mode_title">Ethernet Ip mode</string>
-     <string name="ethernet_info_getting">"getting IP info..."</string>
 
      <!--$_rbox_$_modify_$_zhangxueguang_$_begin_$_20120319_$-->
     <!-- sound devices manager -->
@@ -6134,6 +6130,7 @@
     <string name="sound_output_spdif_passthrough">Spdif Passthrough</string>
     <string name="sound_output_hdmi_multilpcm">HDMI Multi Lpcm</string>
     <!--$_rbox_$_modify_$_zhangxueguang_$_end_$_20120319_$-->
+
      <!--$_rbox_$_modify_$_chenzhi_20120314: add for usb host/device switch-->
     <!--$_rbox_$_modify_$_begin-->
     <!-- usb settings -->
