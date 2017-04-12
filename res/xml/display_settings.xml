@@ -97,31 +97,5 @@
                 android:title="@string/wifi_display_settings_title"
                 settings:keywords="@string/keywords_display_cast_screen"
                 android:fragment="com.android.settings.wfd.WifiDisplaySettings" />
-    <!-- $_rbox_$_modify_$_by huangjc --> 
-        <SwitchPreference
-                android:key="multi_window"
-                android:title="@string/multi_window_title"
-                android:summary="@string/multi_window_summary"
-                android:persistent="false" />
-     <!-- $_rbox_$_modify_$_end -->
-        <!-- $_rbox_$_modify_$_by cx -->
-       <Preference android:key="screenscale"
-                android:title="@string/screenscale"
-                android:dialogTitle="@string/screenscale" >               
-            <intent
-               android:action="android.intent.action.MAIN"
-               android:targetPackage="com.android.settings"
-               android:targetClass="com.android.settings.screen.ScreenScaleActivity" />
-        </Preference>
-        <ListPreference
-                android:key="main_screen_interface"/>
-
-        <ListPreference
-                android:key="main_screen_mode"/>
-        <ListPreference
-                android:key="aux_screen_interface"/>
-        <ListPreference
-                android:key="aux_screen_mode"/>
-        <!-- $_rbox_$_modify_$_end -->
 
 </PreferenceScreen>

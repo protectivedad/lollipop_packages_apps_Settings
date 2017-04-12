@@ -164,11 +164,6 @@
         </dashboard-tile>
 
         <dashboard-tile
-                android:id="@+id/hdmi_settings"
-                android:title="@string/hdmi"
-                android:fragment="com.android.settings.HdmiSettings"
-                android:icon="@drawable/ic_settings_hdmi" />
-        <dashboard-tile
                 android:id="@+id/screenshot_settings"
                 android:title="@string/screenshot_manager"
                 android:fragment="com.android.settings.ScreenshotSetting"

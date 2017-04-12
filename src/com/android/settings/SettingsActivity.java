@@ -112,7 +112,6 @@ import com.android.settings.wifi.AdvancedWifiSettings;
 import com.android.settings.wifi.SavedAccessPointsWifiSettings;
 import com.android.settings.wifi.WifiSettings;
 import com.android.settings.wifi.p2p.WifiP2pSettings;
-import com.android.settings.HdmiSettings;
 import com.android.settings.ScreenshotSetting;
 import com.android.settings.UsbSetting;
 
@@ -243,7 +242,6 @@ public class SettingsActivity extends Activity
             R.id.nfc_payment_settings,
             R.id.home_settings,
             R.id.dashboard,
-            R.id.hdmi_settings,
             R.id.screenshot_settings
     };
 
@@ -310,7 +308,6 @@ public class SettingsActivity extends Activity
             OtherSoundSettings.class.getName(),
             QuickLaunchSettings.class.getName(),
             ApnSettings.class.getName(),
-            HdmiSettings.class.getName(),
             ScreenshotSetting.class.getName(),
             UsbSetting.class.getName()
     };
@@ -1231,11 +1228,6 @@ public class SettingsActivity extends Activity
                             UserManager.DISALLOW_DEBUGGING_FEATURES)) {
                         removeTile = true;
                     }
-                } else if(id ==R.id.hdmi_settings){
-                     boolean isTablet = "box".equals(SystemProperties.get("ro.target.product", "tablet"));
-                     if (isTablet || SystemProperties.get("ro.rk.hdmi_enable", "true").equals("false")){
-                        removeTile = true;
-                     }
                 } else if(id ==R.id.screenshot_settings){
                      if (SystemProperties.get("ro.rk.screenshot_enable", "true").equals("false")){
                         removeTile = true;

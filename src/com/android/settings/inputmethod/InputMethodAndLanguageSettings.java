@@ -32,8 +32,6 @@ import android.hardware.input.InputManager;
 import android.hardware.input.KeyboardLayout;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemProperties;
-import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -81,7 +79,6 @@ public class InputMethodAndLanguageSettings extends SettingsPreferenceFragment
         InputMethodPreference.OnSavePreferenceListener {
     private static final String KEY_SPELL_CHECKERS = "spellcheckers_settings";
     private static final String KEY_PHONE_LANGUAGE = "phone_language";
-    private static final String KEY_AUTO_LANGUAGE = "auto_language";
     private static final String KEY_CURRENT_INPUT_METHOD = "current_input_method";
     private static final String KEY_INPUT_METHOD_SELECTOR = "input_method_selector";
     private static final String KEY_USER_DICTIONARY_SETTINGS = "key_user_dictionary_settings";
@@ -90,7 +87,6 @@ public class InputMethodAndLanguageSettings extends SettingsPreferenceFragment
     private static final boolean SHOW_INPUT_METHOD_SWITCHER_SETTINGS = false;
 
     private int mDefaultInputMethodSelectorVisibility = 0;
-    private CheckBoxPreference mAutoLanguagePref;
     private ListPreference mShowInputMethodSelectorPref;
     private PreferenceCategory mKeyboardSettingsCategory;
     private PreferenceCategory mHardKeyboardCategory;
@@ -112,14 +108,6 @@ public class InputMethodAndLanguageSettings extends SettingsPreferenceFragment
         super.onCreate(icicle);
 
         addPreferencesFromResource(R.xml.language_settings);
-
-        mAutoLanguagePref = (CheckBoxPreference) findPreference(KEY_AUTO_LANGUAGE);
-        if (!allowSetLanguageBySim()) {
-            getPreferenceScreen().removePreference(mAutoLanguagePref);
-        } else if (mAutoLanguagePref != null) {
-            mAutoLanguagePref.setChecked(isAutoLanguageBySim());
-            mAutoLanguagePref.setOnPreferenceChangeListener(this);
-        }
 
         final Activity activity = getActivity();
         mImm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -270,10 +258,6 @@ public class InputMethodAndLanguageSettings extends SettingsPreferenceFragment
         }
 
         if (!mShowsOnlyFullImeAndKeyboardList) {
-            if (mAutoLanguagePref != null) {
-                mAutoLanguagePref.setChecked(isAutoLanguageBySim());
-            }
-
             if (mLanguagePref != null) {
                 String localeName = getLocaleName(getActivity());
                 mLanguagePref.setSummary(localeName);
@@ -388,12 +372,6 @@ public class InputMethodAndLanguageSettings extends SettingsPreferenceFragment
                     saveInputMethodSelectorVisibility((String)value);
                 }
             }
-        }
-        if (preference == mAutoLanguagePref) {
-            boolean autoEnabled = (Boolean) value;
-            Settings.Global.putInt(getContentResolver(), Settings.Global.AUTO_LANGUAGE_BY_SIM,
-                    autoEnabled ? 1 : 0);
-            return true;
         }
         return false;
     }
@@ -637,20 +615,6 @@ public class InputMethodAndLanguageSettings extends SettingsPreferenceFragment
             }
         }
         return false;
-    }
-
-    private boolean allowSetLanguageBySim() {
-        if (!SystemProperties.getBoolean("ro.config.set_language_by_sim", false)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean isAutoLanguageBySim() {
-        final boolean autoEnabled = Settings.Global.getInt(getContentResolver(),
-                Settings.Global.AUTO_LANGUAGE_BY_SIM, 0) > 0;
-        return autoEnabled;
     }
 
     private class SettingsObserver extends ContentObserver {

@@ -76,10 +76,8 @@ public class WirelessSettings extends SettingsPreferenceFragment
     private static final String KEY_SMS_APPLICATION = "sms_application";
     private static final String KEY_TOGGLE_NSD = "toggle_nsd"; //network service discovery
     private static final String KEY_CELL_BROADCAST_SETTINGS = "cell_broadcast_settings";
-    private static final String KEY_PPPOE_SETTINGS ="pppoe_settings";
-    private static final String KEY_ETHERNET_SETTINGS="ethernet_settings";
-    public static final String EXIT_ECM_RESULT = "exit_ecm_result";
 
+    public static final String EXIT_ECM_RESULT = "exit_ecm_result";
     public static final int REQUEST_CODE_EXIT_ECM = 1;
 
     private AirplaneModeEnabler mAirplaneModeEnabler;
@@ -357,13 +355,7 @@ public class WirelessSettings extends SettingsPreferenceFragment
         if (!isSmsSupported()) {
             removePreference(KEY_SMS_APPLICATION);
         }
-		//add by ljh 
-		removePreference(KEY_MANAGE_MOBILE_PLAN);
-       //add by rochip xxh  revmoe KEY_MANAGE_MOBILE_PLAN when device is used as a MID
-       if((SystemProperties.get("ril.function.dataonly")).equals("1")){
-	    removePreference(KEY_SMS_APPLICATION);
-	    removePreference(KEY_MANAGE_MOBILE_PLAN);
-        }
+
         // Remove Airplane Mode settings if it's a stationary device such as a TV.
         if (mPm.hasSystemFeature(PackageManager.FEATURE_TELEVISION)) {
             removePreference(KEY_TOGGLE_AIRPLANE);
@@ -377,18 +369,6 @@ public class WirelessSettings extends SettingsPreferenceFragment
         getPreferenceScreen().removePreference(mGlobalProxy);
         mGlobalProxy.setEnabled(mDPM.getGlobalProxyAdmin() == null);
 
-        boolean isTablet = "box".equals(SystemProperties.get("ro.target.product", "tablet"));
-        String isCts = SystemProperties.get("net.pppoe.cts");
-        if(!isTablet || "true".equals(isCts)) {
-            Preference mPppoe = findPreference(KEY_PPPOE_SETTINGS);
-            getPreferenceScreen().removePreference(mPppoe);
-        }
-        boolean isTB = "unknown".equals(SystemProperties.get("ro.target.product", "unknown"));
-        if(isTB) {
-            Preference mEthernet = findPreference(KEY_ETHERNET_SETTINGS);
-            getPreferenceScreen().removePreference(mEthernet);
-
-        }
         // Disable Tethering if it's not allowed or if it's a wifi-only device
         final ConnectivityManager cm =
                 (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -551,6 +531,7 @@ public class WirelessSettings extends SettingsPreferenceFragment
                 if (!isMobilePlanEnabled) {
                     result.add(KEY_MANAGE_MOBILE_PLAN);
                 }
+
                 // Remove SMS Application if the device does not support SMS
                 TelephonyManager tm =
                         (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

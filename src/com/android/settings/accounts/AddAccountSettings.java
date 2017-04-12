@@ -41,7 +41,6 @@ import java.lang.reflect.Method;
 
 import static android.content.Intent.EXTRA_USER;
 
-
 /**
  * Entry point Activity for account setup. Works as follows
  *
@@ -159,7 +158,6 @@ public class AddAccountSettings extends Activity {
         final String[] accountTypes =
                 getIntent().getStringArrayExtra(AccountPreferenceBase.ACCOUNT_TYPES_FILTER_KEY);
         final Intent intent = new Intent(this, ChooseAccountActivity.class);
-
         if (authorities != null) {
             intent.putExtra(AccountPreferenceBase.AUTHORITIES_FILTER_KEY, authorities);
             if (authorities.length==1){
@@ -170,7 +168,6 @@ public class AddAccountSettings extends Activity {
             intent.putExtra(AccountPreferenceBase.ACCOUNT_TYPES_FILTER_KEY, accountTypes);
         }
         intent.putExtra(EXTRA_USER, mUserHandle);
-
         startActivityForResult(intent, CHOOSE_ACCOUNT_REQUEST);
     }
 

@@ -224,6 +224,7 @@ public class Status extends PreferenceActivity {
                         int position, long id) {
                     ListAdapter listAdapter = (ListAdapter) parent.getAdapter();
                     Preference pref = (Preference) listAdapter.getItem(position);				
+
                     ClipboardManager cm = (ClipboardManager)
                             getSystemService(Context.CLIPBOARD_SERVICE);
                     cm.setText(pref.getSummary());

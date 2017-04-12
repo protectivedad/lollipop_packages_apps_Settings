@@ -1913,34 +1913,6 @@
                 android:value="true" />
         </activity>
 
-        
-        <!-- $_rbox_$_modify_$_zhengyang begin: added for screen settings -->
-        <activity android:name="Settings$ScreenSettingsActivity"
-                  android:label="@string/screen_settings"
-                  android:clearTaskOnLaunch="true"
-                  android:parentActivityName="Settings$DisplaySettingsActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="com.android.settings.SCREEN_SETTINGS" />
-                <action android:name="android.settings.SCREEN_SETTINGS" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.VOICE_LAUNCH" />
-                <category android:name="com.android.settings.SHORTCUT" />
-            </intent-filter>
-            <meta-data android:name="com.android.settings.FRAGMENT_CLASS"
-                android:value="com.android.settings.DisplaySettings" />
-            <meta-data android:name="com.android.settings.TOP_LEVEL_HEADER_ID"
-                android:resource="@id/display_settings" />
-        </activity>
-        
-        <activity android:name=".screen.ScreenScaleActivity"
-                       android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>    
-        <!-- $_rbox_$_modify_$_zhengyang: end for screen settings -->
         <!-- Keep compatibility with old shortcuts. -->
         <activity-alias android:name="Settings$SoundSettingsActivity"
                 android:label="@string/notification_settings"
@@ -2107,31 +2079,6 @@
             </intent-filter>
         </provider>
         
-        <!-- HDMI -->
-        <activity android:name="Settings$HdmiSettingsActivity"
-                android:label="@string/hdmi"
-                android:taskAffinity="">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.VOICE_LAUNCH" />
-                <category android:name="com.android.settings.SHORTCUT" />
-            </intent-filter>
-            <meta-data android:name="com.android.settings.FRAGMENT_CLASS"
-                android:value="com.android.settings.HdmiSettings" />
-            <meta-data android:name="com.android.settings.TOP_LEVEL_HEADER_ID"
-                android:resource="@id/hdmi_settings" />
-            <meta-data android:name="com.android.settings.PRIMARY_PROFILE_CONTROLLED"
-                android:value="true" />
-        </activity>
-        
-        <receiver android:name="HdmiReceiver">
-            <intent-filter android:priority="1000">
-                <action android:name="android.intent.action.HDMI_PLUG"/>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-       </receiver>
-
        <!-- SCREENSHOT -->
         <activity android:name="Settings$ScreenshotSettingsActivity"
                 android:label="@string/screenshot_manager"
